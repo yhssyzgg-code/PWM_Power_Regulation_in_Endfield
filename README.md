@@ -7,7 +7,7 @@
 
 算法实现部分由deepseek、chatgpt、Gemini完成，我只能保证计算过程是正确的，不能保证程序没有问题
 
-> 🔗 **在线使用**：https://yhssyzgg-code.github.io/PWM_Power_Regulation_in_Endfield/
+>  **在线使用**：https://yhssyzgg-code.github.io/PWM_Power_Regulation_in_Endfield/
 > （纯前端实现，打开即用，无需安装）
 
 ---
