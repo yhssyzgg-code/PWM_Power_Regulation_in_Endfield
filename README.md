@@ -5,7 +5,7 @@
 > 给定电池供给间隔、负载消耗与发电速率，搜索出**可行的分流比**，仿真**后备电量曲线**，
 > 并给出**最少分流器的树状接法**。
 
-/算法实现部分由deepseek、chatgpt、Gemini完成，我只能保证计算过程是正确的，不能保证程序没有问题/
+算法实现部分由deepseek、chatgpt、Gemini完成，我只能保证计算过程是正确的，不能保证程序没有问题
 
 > 🔗 **在线使用**：https://yhssyzgg-code.github.io/PWM_Power_Regulation_in_Endfield/
 > （纯前端实现，打开即用，无需安装）
@@ -43,7 +43,7 @@
 1. **分流比取多少**——取太大补不满缺口，取太小又会浪费；
 2. **怎么接出来**——游戏里只有 2 分器与 3 分器，如何用最少的器件拼出这个比例。
 
-👉 直接在浏览器打开 **https://yhssyzgg-code.github.io/PWM_Power_Regulation_in_Endfield/** 即可试用。
+直接在浏览器打开 **https://yhssyzgg-code.github.io/PWM_Power_Regulation_in_Endfield/** 即可试用。
 
 ---
 
