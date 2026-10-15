@@ -1,922 +1,1678 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>潮汐供电 · 分流方案计算器</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>潮汐供电 · 分流计算器（1 秒离散仿真）</title>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--ink:#172033;--muted:#667085;--line:#d9e1ec;--blue:#2563eb;--green:#0f9d78;--orange:#e58a12;--red:#dc4c4c}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
-main{max-width:1180px;margin:auto;padding:22px 16px 40px}.hero{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}
-h1{font-size:clamp(23px,4vw,32px);margin:0 0 6px;letter-spacing:-.4px}.sub{color:var(--muted);max-width:760px}
-.pill{background:#e7efff;color:#1d4ed8;border-radius:999px;padding:6px 11px;font-size:12px;white-space:nowrap}
-.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px;align-items:start}
-.card{background:var(--card);border:1px solid #e4eaf2;border-radius:16px;padding:18px;box-shadow:0 4px 16px #15223b08}
-h2{font-size:17px;margin:0 0 14px}.field{margin-bottom:13px}.field label{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:13px;margin-bottom:5px}
-.field small{color:var(--muted);font-weight:400}input,select{width:100%;padding:10px 11px;border:1px solid #cfd8e5;border-radius:9px;font:inherit;background:white;color:var(--ink)}input:focus,select:focus{outline:2px solid #b7cdfd;border-color:var(--blue)}
-.rowbtn{display:flex;gap:8px;margin-top:15px}.btn{border:0;border-radius:10px;padding:11px 13px;font:600 14px inherit;cursor:pointer}.primary{background:var(--blue);color:white;flex:1}.secondary{background:#edf1f7;color:#344054}.btn:disabled{opacity:.6;cursor:wait}
-.note{font-size:12px;color:var(--muted);margin-top:12px}.status{padding:11px 12px;border-radius:10px;background:#f1f5fb;color:#475467;font-size:13px;margin-top:12px;white-space:pre-wrap}
-.results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
-.metric{border:1px solid var(--line);border-radius:12px;padding:12px}.metric .label{color:var(--muted);font-size:12px}.metric .value{font-size:20px;font-weight:750;margin-top:4px;overflow-wrap:anywhere}
-.charthead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.charthead h2{margin:0}
-.charttools{display:flex;gap:6px;flex-wrap:wrap}.charttools button{padding:7px 10px;font-size:12px}
-.canvaswrap{position:relative;border:1px solid #e4eaf2;border-radius:12px;overflow:hidden;background:#fff;touch-action:none}
-#chart{display:block;width:100%;height:420px;touch-action:none;cursor:grab;background:#fff}#chart:active{cursor:grabbing}
-#splitDiagram{display:block;width:100%;height:360px;touch-action:none;cursor:grab;background:#fff}
-#splitDiagram:active{cursor:grabbing}
-.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
-.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 0 2px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
-.details{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.detailbox{background:#f8fafc;border:1px solid #e7edf5;border-radius:11px;padding:12px;font-size:13px}.detailbox strong{display:block;margin-bottom:6px}.detailbox p{margin:3px 0;color:#475467;overflow-wrap:anywhere}
-footer{margin-top:18px;color:var(--muted);font-size:12px}
-@media(max-width:850px){.layout{grid-template-columns:1fr}.hero{display:block}.pill{display:inline-block;margin-top:10px}.results{grid-template-columns:repeat(2,minmax(0,1fr))}#chart{height:360px}#splitDiagram{height:300px}}
-@media(max-width:480px){main{padding:14px 10px 28px}.card{padding:14px}.results{grid-template-columns:1fr 1fr}.metric .value{font-size:17px}.details{grid-template-columns:1fr}#chart{height:320px}}
+:root{
+  --bg:#eef4fb; --card:#ffffff; --card2:#fbfdff; --line:#dbe6f3; --line2:#c2d4e8;
+  --fg:#122036; --muted:#546a89; --dim:#7d93ad;
+  --cyan:#0284c7; --amber:#f59e0b; --green:#10b981; --red:#ef4444; --violet:#8b5cf6;
+  --glow1:#cfe6ff; --glow2:#e2ecff; --shadow:0 8px 22px rgba(20,45,80,.08);
+  --input-bg:#ffffff; --focus:rgba(2,132,199,.16); --btn-bg:#eef4fb; --btn-hover:#e2efff;
+  --panel:#f8fbff; --panel2:#f4f8fe; --formula-bg:#f6faff; --plot-bg:#ffffff;
+  --strong:#0f2036; --code:#2a4a6b; --note-b:#b45309;
+  --verdict-bg1:#e9f6ff; --verdict-bg2:#f8fcff; --verdict-bd:#bae6fd; --chip-fg:#1f3a5f;
+  --ok-bd:#a7e8cd; --ok-fg:#067a55; --warn-bd:#f0c98a; --warn-fg:#a15c00; --bad-bd:#f6bcbc; --bad-fg:#b91c1c;
+  --row-hover:rgba(2,132,199,.06); --row-active:rgba(2,132,199,.09);
+  --s2-fg:#0369a1; --s2-bd:#9fd0ec; --s2-bg:rgba(2,132,199,.10);
+  --s3-fg:#047857; --s3-bd:#a7e8cd; --s3-bg:rgba(16,185,129,.12);
+  --cv-plot:#f8fbff; --cv-grid:#e3ecf7; --cv-grid2:#eaf1fa; --cv-dimline:#cbd5e1;
+  --cv-axis:#7d93ad; --cv-text:#42597a; --cv-curve:#0284c7;
+  --cv-halo:rgba(255,255,255,.92); --cv-halo2:rgba(255,255,255,.9);
+  --cv-dotbg:#ffffff; --cv-dotin:#0284c7; --cv-accent:#0ea5e9;
+  --cv-cap:#ef4444; --cv-safe:#f59e0b; --cv-violet:rgba(167,139,250,.45); --cv-green:rgba(52,211,153,.8);
+  --cv-hoverline:rgba(60,90,130,.45); --cv-labelbg:rgba(255,255,255,.97); --cv-labelbd:rgba(140,170,205,.9);
+  --cv-labelfg:#10233c; --cv-labelfg2:#42597a; --cv-rowidle:rgba(130,150,180,.22); --cv-outline:rgba(2,132,199,.75);
+  --sv-arrow:#94a3b8; --sv-edge:#c3d2e6; --sv-edge-shared:rgba(245,158,11,.7); --sv-amber:#f59e0b;
+  --sv-out-fill:rgba(245,158,11,.13); --sv-out-fg:#a15c00; --sv-out-sub:#b45309;
+  --sv-root-fill:rgba(167,139,250,.16); --sv-root-stroke:#8b5cf6; --sv-root-fg:#5b21b6; --sv-root-sub:#6d28d9;
+  --sv-2-stroke:#0ea5e9; --sv-2-fill:rgba(56,189,248,.18); --sv-2-fg:#0369a1;
+  --sv-3-stroke:#10b981; --sv-3-fill:rgba(52,211,153,.18); --sv-3-fg:#047857;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Cascadia Mono",monospace;
+}
+html[data-theme="dark"]{
+  --bg:#080e1b; --card:#0f1930; --card2:#0c1528; --line:#1e2c49; --line2:#2b3d61;
+  --fg:#e9effa; --muted:#8fa3c4; --dim:#6b7f9f;
+  --cyan:#38bdf8; --green:#34d399; --red:#f87171; --violet:#a78bfa;
+  --glow1:#16325e; --glow2:#1b2a4d; --shadow:0 12px 34px rgba(0,0,0,.30);
+  --input-bg:#091223; --focus:rgba(56,189,248,.14); --btn-bg:#132241; --btn-hover:#1b2f52;
+  --panel:#0b1426; --panel2:#0b1426; --formula-bg:#0a1223; --plot-bg:#08101f;
+  --strong:#eaf3ff; --code:#a9c2e6; --note-b:#f0b46a;
+  --verdict-bg1:rgba(56,189,248,.10); --verdict-bg2:rgba(56,189,248,.02); --verdict-bd:#1d4b6e; --chip-fg:#cfe0f7;
+  --ok-bd:#1f6b52; --ok-fg:#8ef0c8; --warn-bd:#7a5410; --warn-fg:#ffd48a; --bad-bd:#7a2f2f; --bad-fg:#ffb4b4;
+  --row-hover:rgba(56,189,248,.06); --row-active:rgba(56,189,248,.12);
+  --s2-fg:#9fd8ff; --s2-bd:#2b5f88; --s2-bg:rgba(56,189,248,.10);
+  --s3-fg:#a9f0c9; --s3-bd:#2c6b50; --s3-bg:rgba(52,211,153,.10);
+  --cv-plot:#08101f; --cv-grid:#16233c; --cv-grid2:#1b2a44; --cv-dimline:#3a4d70;
+  --cv-axis:#7c90b3; --cv-text:#9fb4d6; --cv-curve:#5ad2ff;
+  --cv-halo:rgba(4,10,20,.85); --cv-halo2:rgba(4,10,20,.8);
+  --cv-dotbg:#0a1424; --cv-dotin:#9fe4ff; --cv-accent:#38bdf8;
+  --cv-cap:#f87171; --cv-safe:#f59e0b; --cv-violet:rgba(167,139,250,.45); --cv-green:rgba(52,211,153,.8);
+  --cv-hoverline:rgba(233,239,250,.45); --cv-labelbg:rgba(8,16,32,.94); --cv-labelbd:rgba(130,165,215,.6);
+  --cv-labelfg:#dce8fb; --cv-labelfg2:#9fb4d6; --cv-rowidle:rgba(80,100,130,.18); --cv-outline:rgba(90,210,255,.75);
+  --sv-arrow:#7f97bd; --sv-edge:#3d5379; --sv-edge-shared:rgba(245,158,11,.7); --sv-amber:#f59e0b;
+  --sv-out-fill:rgba(245,158,11,.13); --sv-out-fg:#ffd48a; --sv-out-sub:#c9b28a;
+  --sv-root-fill:rgba(167,139,250,.16); --sv-root-stroke:#a78bfa; --sv-root-fg:#d7c9ff; --sv-root-sub:#a794d6;
+  --sv-2-stroke:#38bdf8; --sv-2-fill:rgba(56,189,248,.18); --sv-2-fg:#bfe9ff;
+  --sv-3-stroke:#34d399; --sv-3-fill:rgba(52,211,153,.18); --sv-3-fg:#bff5dc;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1100px 520px at 12% -12%, var(--glow1) 0%, transparent 62%),
+    radial-gradient(900px 500px at 100% 0%, var(--glow2) 0%, transparent 55%),
+    var(--bg);
+  color:var(--fg);
+  font:14px/1.65 "Segoe UI","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--cyan)}
+.wrap{max-width:1560px;margin:0 auto;padding:22px 20px 60px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;margin-bottom:18px}
+header.top h1{margin:0;font-size:23px;letter-spacing:.4px}
+header.top h1 b{color:var(--cyan)}
+header.top p{margin:0;color:var(--muted);font-size:13px}
+.tagline{margin-left:auto;color:var(--dim);font-size:12px;font-family:var(--mono)}
+.grid{display:grid;grid-template-columns:352px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:1080px){ .grid{grid-template-columns:1fr} }
+.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:14px;padding:16px 16px 18px;box-shadow:var(--shadow)}
+.card + .card{margin-top:16px}
+.card h2{margin:0 0 12px;font-size:14px;color:var(--cyan);letter-spacing:.6px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card h2::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--cyan);display:inline-block}
+.card h2 small{color:var(--dim);font-weight:400;letter-spacing:0}
+.field{display:block;margin-bottom:12px}
+.field > span{display:flex;align-items:baseline;gap:8px;color:var(--muted);font-size:12.5px;margin-bottom:5px}
+.field > span em{font-style:normal;color:var(--dim);font-size:11.5px;margin-left:auto;font-family:var(--mono)}
+.field input[type=number],.field select{
+  width:100%;background:var(--input-bg);border:1px solid var(--line2);color:var(--fg);
+  border-radius:9px;padding:9px 11px;font:15px/1.3 var(--mono);outline:none;
+}
+.field input[type=number]:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px var(--focus)}
+.rng{width:100%;margin-top:8px;height:16px;accent-color:var(--cyan);cursor:pointer}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{appearance:none;border:1px solid var(--line2);background:var(--btn-bg);color:var(--fg);border-radius:9px;padding:9px 14px;font-size:13.5px;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--cyan);background:var(--btn-hover)}
+.btn.primary{background:linear-gradient(180deg,#0ea5e9,#0284c7);border-color:#0ea5e9;color:#fff;font-weight:600;width:100%;padding:11px;font-size:14.5px}
+.btn.primary:hover{filter:brightness(1.1)}
+.btn.small{padding:5px 10px;font-size:12px;border-radius:7px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+details.adv{margin-top:6px;border-top:1px dashed var(--line2);padding-top:10px}
+details.adv summary{cursor:pointer;color:var(--muted);font-size:12.5px;outline:none;margin-bottom:10px}
+.status{margin-top:10px;font-size:12.5px;color:var(--muted);min-height:18px}
+.status.err{color:var(--red)}
+.switch{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px;margin-bottom:10px}
+.switch input{width:16px;height:16px;accent-color:var(--cyan)}
+.verdict{border:1px solid var(--verdict-bd);background:linear-gradient(180deg,var(--verdict-bg1),var(--verdict-bg2));border-radius:12px;padding:14px 16px;margin-bottom:14px}
+.verdict .title{font-size:19px;font-weight:600;letter-spacing:.3px}
+.verdict .title b{color:var(--cyan);font-family:var(--mono)}
+.verdict .sub{color:var(--muted);font-size:13px;margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.chip{border:1px solid var(--line2);background:var(--panel2);border-radius:999px;padding:4px 11px;font-size:12.5px;font-family:var(--mono);color:var(--chip-fg)}
+.chip.ok{border-color:var(--ok-bd);color:var(--ok-fg)}
+.chip.warn{border-color:var(--warn-bd);color:var(--warn-fg)}
+.chip.bad{border-color:var(--bad-bd);color:var(--bad-fg)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px}
+.metric{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:10px 12px}
+.metric .k{color:var(--dim);font-size:11.5px;letter-spacing:.3px}
+.metric .v{font-family:var(--mono);font-size:18px;margin-top:3px;color:var(--strong)}
+.metric .v small{font-size:12px;color:var(--muted);margin-left:3px}
+.metric .n{color:var(--dim);font-size:11px;margin-top:2px}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.12;margin:0 2px}
+.frac .num{border-bottom:1px solid currentColor;padding:0 4px}
+.frac .den{padding:0 4px}
+.formula{font-family:var(--mono);font-size:13.5px;color:var(--fg);background:var(--formula-bg);border:1px solid var(--line);border-radius:11px;padding:13px 15px;overflow-x:auto}
+.formula .ln{padding:3px 0;white-space:nowrap}
+.formula .cm{color:var(--dim)}
+.formula .hl{color:var(--cyan)}
+.formula .ok{color:var(--green)}
+.cvwrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--plot-bg)}
+canvas{display:block;width:100%;height:560px;touch-action:none;cursor:crosshair}
+@media (max-width:760px){ canvas{height:480px} }
+.legend{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:12px;margin-top:9px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.legend .dot{width:9px;height:9px;border-radius:50%}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--dim);font-weight:500;font-size:12px;letter-spacing:.3px}
+td:first-child,th:first-child{text-align:left}
+td.mono,th.mono{font-family:var(--mono)}
+tbody tr:hover{background:var(--row-hover)}
+tr.pick{cursor:pointer}
+tr.pick.active{background:var(--row-active);box-shadow:inset 3px 0 0 var(--cyan)}
+.chain{display:inline-flex;gap:3px;vertical-align:middle}
+.chain i{font-style:normal;font-family:var(--mono);font-size:11.5px;border-radius:5px;padding:1px 5px;border:1px solid}
+.chain i.s2{color:var(--s2-fg);border-color:var(--s2-bd);background:var(--s2-bg)}
+.chain i.s3{color:var(--s3-fg);border-color:var(--s3-bd);background:var(--s3-bg)}
+.note{color:var(--muted);font-size:12.5px;margin-top:10px;line-height:1.7}
+.note b{color:var(--note-b);font-weight:600}
+.whynot{list-style:none;margin:0;padding:0}
+.whynot li{border-left:2px solid var(--warn-bd);padding:5px 0 5px 11px;margin-bottom:7px;font-size:12.5px;color:var(--muted)}
+.whynot li b{color:var(--warn-fg);font-family:var(--mono);font-weight:600}
+footer{margin-top:26px;color:var(--dim);font-size:12px;line-height:1.8;border-top:1px solid var(--line);padding-top:14px}
+footer code{font-family:var(--mono);color:var(--code)}
+.scroll{overflow-x:auto}
+.netwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--plot-bg);padding:6px}
+.netwrap svg{display:block;height:auto;max-width:100%}
+.netnote{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:12px;margin-top:10px}
+.netnote i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px}
 </style>
 </head>
 <body>
-<main>
-  <div class="hero">
-    <div><h1>潮汐供电 · 分流方案计算器</h1><div class="sub">搜索等效分流比例，检查电池到达节奏，并仿真后备电量随时间的变化。分流树自动选最简布局（公共因子 / Trie）。</div></div>
-    <span class="pill">交互式电量仿真</span>
-  </div>
-  <div class="layout">
-    <section class="card">
-      <h2>参数与搜索设置</h2>
-      <div class="field"><label for="t">基础电池间隔 t <small>秒</small></label><input id="t" type="number" min="0.01" step="any" value="2"></div>
-      <div class="field"><label for="Q">负载消耗速率 Q <small>单位/秒</small></label><input id="Q" type="number" min="0.01" step="any" value="675"></div>
-      <div class="field"><label for="A">单块电池发电速率 A <small>单位/秒</small></label><input id="A" type="number" min="0.01" step="any" value="3230"></div>
-      <div class="field"><label for="capacity">后备电量容量</label><input id="capacity" type="number" min="1" step="any" value="100000"></div>
-      <div class="field"><label for="margin">最低安全电量</label><input id="margin" type="number" min="0" step="any" value="500"></div>
-      <div class="field"><label for="depth">搜索深度</label><select id="depth"><option value="fast">快速</option><option value="standard" selected>标准</option><option value="deep">深入</option></select></div>
-      <div class="field"><label for="maxSub">最多子流数量</label>
-        <select id="maxSub">
-          <option value="1">1（单线）</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5" selected>5</option>
-        </select>
-      </div>
-      <div class="field"><label for="budget">搜索时间预算 <small>秒</small></label><input id="budget" type="number" min="0.2" max="20" step="0.5" value="5"></div>
-      <div class="rowbtn"><button id="run" class="btn primary">搜索并仿真</button><button id="resetInputs" class="btn secondary">恢复默认</button></div>
-      <div id="status" class="status">准备就绪。点击“搜索并仿真”开始计算。</div>
-      <div class="note">说明：网页版本将原 Python 搜索流程移植为浏览器端近似实现。深度越高，搜索越慢。</div>
-    </section>
-    <section>
-      <div class="results">
-        <div class="metric"><div class="label">等效比例 f</div><div id="mF" class="value">—</div></div>
-        <div class="metric"><div class="label">有效减速倍率 D/k</div><div id="mD" class="value">—</div></div>
-        <div class="metric"><div class="label">供电精度</div><div id="mAcc" class="value">—</div></div>
-        <div class="metric"><div class="label">稳态最低电量</div><div id="mE" class="value">—</div></div>
-        <div class="metric"><div class="label">最小电池到达间隔</div><div id="mGap" class="value">—</div></div>
-        <div class="metric"><div class="label">热机结束时刻</div><div id="mWarm" class="value">—</div></div>
-      </div>
-      <div class="card">
-        <div class="charthead"><h2>后备电量变化曲线（含热机段）</h2><div class="charttools">
-          <button class="btn secondary" id="zoomIn">放大 +</button><button class="btn secondary" id="zoomOut">缩小 −</button><button class="btn secondary" id="fit">显示全程</button><button class="btn secondary" id="fitWarm">只看热机</button><button class="btn secondary" id="fitSteady">只看稳态</button><button class="btn secondary" id="export">导出 CSV</button>
-        </div></div>
-        <div class="canvaswrap"><svg id="chart" role="img" aria-label="含热机段的矢量电量曲线" viewBox="0 0 1000 420" preserveAspectRatio="none"></svg></div>
-        <div class="hint">操作：鼠标拖动平移，滚轮缩放时间轴，Shift+拖动框选放大；手机单指拖动、双指缩放。双击复位。紫色虚线标记热机结束。</div>
-        <div class="legend">
-          <span><i class="dot" style="background:#2563eb"></i>后备电量</span>
-          <span><i class="dot" style="background:#dc4c4c"></i>容量上限</span>
-          <span><i class="dot" style="background:#e58a12"></i>安全电量</span>
-          <span><i class="dot" style="background:#0f9d78"></i>公共周期</span>
-          <span><i class="dot" style="background:#a855f7"></i>热机结束</span>
-        </div>
-        <div class="details">
-          <div class="detailbox"><strong>最优方案</strong><div id="bestDetails">尚未计算。</div></div>
-          <div class="detailbox"><strong>仿真说明</strong><div id="simDetails">热机：从满电量、无电池开始，前期无到达导致电量下滑；稳态：最后一次电量触底后进入稳定周期波动。</div></div>
-        </div>
-      </div>
-      <div class="card" style="margin-top:14px">
-        <div class="charthead">
-          <h2>分流器配合方案（最简树状图）</h2>
-          <div class="charttools">
-            <button class="btn secondary" id="diagramZoomIn">放大 +</button>
-            <button class="btn secondary" id="diagramZoomOut">缩小 −</button>
-            <button class="btn secondary" id="diagramFit">适应宽度</button>
-            <button class="btn secondary" id="diagramReset">复位视图</button>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>潮汐供电 · <b>分流计算器</b></h1>
+      <p>输入 Q、A、t → 由统一公式 <span style="font-family:var(--mono)">C = 40A/(tQ) ≥ 1/f = D/k</span> 自动搜出分流方案，并按<strong>终末地的 1 秒离散结算</strong>仿真后备电量曲线。</p>
+    </div>
+    <div class="tagline">离散步长 1 s ／ 电池燃烧 40 s ／ 只用 2、3 分器</div>
+    <button class="btn small" id="themeBtn" title="切换深色 / 浅色">🌙 深色</button>
+  </header>
+
+  <div class="grid">
+    <!-- ============ 左栏：参数 ============ -->
+    <aside>
+      <section class="card">
+        <h2>输入参数</h2>
+        <label class="field"><span>Q 电量缺口<em>单位 / 秒</em></span>
+          <input id="Q" type="number" value="325" min="0" step="1"></label>
+        <label class="field"><span>A 单块电池发电速率<em>单位 / 秒</em></span>
+          <input id="A" type="number" value="1600" min="0" step="1"></label>
+        <label class="field"><span>t 电池供给间隔<em>秒</em></span>
+          <input id="t" type="number" value="2" min="0.5" step="0.5"></label>
+
+        <details class="adv" open>
+          <summary>高级参数（影响可行域）</summary>
+          <label class="field"><span>后备电量容量<em>单位</em></span>
+            <input id="capacity" type="number" value="100000" min="1" step="1000">
+            <input id="capacityR" class="rng" type="range" min="0" max="100000" step="1000" value="100000"></label>
+          <label class="field"><span>最低安全电量<em>单位</em></span>
+            <input id="margin" type="number" value="500" min="0" step="100">
+            <input id="marginR" class="rng" type="range" min="0" max="100000" step="100" value="500"></label>
+          <label class="field"><span>初始电量<em>仿真起点</em></span>
+            <select id="E0mode">
+              <option value="full">满容量（直接看稳态）</option>
+              <option value="zero" selected>0（热机：空箱起步）</option>
+              <option value="half">半容量</option>
+            </select></label>
+          <div class="row2">
+            <label class="field"><span>最多支路数<em>条</em></span>
+              <input id="nMax" type="number" value="6" min="1" max="8" step="1"></label>
+            <label class="field"><span>搜索强度<em></em></span>
+              <select id="depth">
+                <option value="fast">快速</option>
+                <option value="standard">标准</option>
+                <option value="deep" selected>深入</option>
+              </select></label>
           </div>
+          <label class="switch"><input id="strict" type="checkbox" checked>
+            要求 D/k 为最简分数（与文档 gcd(k,6)=1 一致）</label>
+        </details>
+
+        <button class="btn primary" id="run">计算分流方案</button>
+        <div class="btnrow">
+          <button class="btn small" id="reset">恢复默认</button>
+          <button class="btn small" id="csv">导出曲线 CSV</button>
         </div>
-        <div class="canvaswrap"><svg id="splitDiagram" role="img" aria-label="分流器串联与支路汇合方案"></svg></div>
-        <div class="hint">操作：鼠标拖动平移，滚轮缩放，双击复位。标题会显示采用的布局策略（公共因子 / Trie）及分流器总数。</div>
+        <div class="btnrow">
+          <button class="btn small" id="demoShare" title="把后备容量放大到 40 万，看多条支路如何共用分流器">示例：多支路共用接法</button>
+          <button class="btn small" id="demoZero" title="从 0 电量起步，看缓冲被充满的过程">示例：空箱起步</button>
+        </div>
+        <div class="status" id="status"></div>
+      </section>
+
+      <section class="card">
+        <h2>判据速查<small>（文档统一公式）</small></h2>
+        <div class="formula" style="border:none;background:none;padding:0">
+          <div class="ln"><span class="cm">单线：</span>T = t·d，d = 2<sup>x₂</sup>·3<sup>x₃</sup></div>
+          <div class="ln"><span class="cm">能量：</span>40A ≥ T·Q ⟹ C = <span class="frac"><span class="num">40A</span><span class="den">tQ</span></span> ≥ d</div>
+          <div class="ln"><span class="cm">多线：</span>C ≥ R<sub>n</sub> ⁄ Σ<sub>i</sub>(R<sub>n</sub>/d<sub>i</sub>) = <span class="frac"><span class="num">D</span><span class="den">k</span></span></div>
+          <div class="ln"><span class="cm">其中：</span>D = lcm(d<sub>i</sub>) = 2<sup>a</sup>3<sup>b</sup>，k = Σ w<sub>i</sub>，w<sub>i</sub> = D/d<sub>i</sub></div>
+          <div class="ln"><span class="cm">约束：</span>C ≥ D/k，gcd(k,6) = 1</div>
+        </div>
+        <div class="note">C 是减速倍数的<b>上限</b>：D/k 越接近 C，供电精度越高；离得越远，多出来的电只能溢出浪费。</div>
+      </section>
+    </aside>
+
+    <!-- ============ 右栏：结果 ============ -->
+    <section>
+      <div class="card">
+        <div class="verdict" id="verdict">
+          <div class="title">等待计算…</div>
+          <div class="sub">点击左侧「计算分流方案」</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>分流器接法<small>（箭头 = 电池流向；琥珀虚框 = 多条支路共用）</small></h2>
+        <div class="netwrap" id="net"></div>
+        <div class="netnote">
+          <span><i style="background:rgba(56,189,248,.35);border:1px solid #0ea5e9"></i>2 分器</span>
+          <span><i style="background:rgba(52,211,153,.35);border:1px solid #10b981"></i>3 分器</span>
+          <span><i style="background:rgba(245,158,11,.25);border:1px dashed #f59e0b"></i>多支路共用</span>
+          <span><i style="background:rgba(245,158,11,.18);border:1px solid #f59e0b"></i>支路输出</span>
+          <span><i style="background:rgba(167,139,250,.25);border:1px solid #8b5cf6"></i>电池输入</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>后备电量曲线<small>（1 秒一格，阶梯即离散结算）</small></h2>
+        <div class="cvwrap">
+          <canvas id="chart"></canvas>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--cyan)"></i>电量 E(t)</span>
+          <span><i style="background:rgba(245,158,11,.55)"></i>电池燃烧中</span>
+          <span><i style="background:var(--red)"></i>容量上限</span>
+          <span><i style="background:var(--amber)"></i>安全电量</span>
+          <span><i class="dot" style="background:var(--violet)"></i>公共周期 / 充满时刻</span>
+          <span><i class="dot" style="background:var(--cyan)"></i>电池到达</span>
+        </div>
+        <div class="btnrow">
+          <button class="btn small" data-view="all">全程</button>
+          <button class="btn small" data-view="steady">稳态段(1 个周期)</button>
+          <button class="btn small" data-view="rise">充满过程</button>
+          <button class="btn small" data-view="in">放大</button>
+          <button class="btn small" data-view="out">缩小</button>
+          <button class="btn small" data-view="wheelnote">滚轮缩放 / 拖动平移 / 双击复位</button>
+        </div>
+        <div class="note" id="simnote"></div>
+      </div>
+
+      <div class="card">
+        <div class="metrics" id="metrics"></div>
+      </div>
+
+      <div class="card">
+        <h2>统一公式代入<small>（把本次输入代进去）</small></h2>
+        <div class="formula" id="formula"></div>
+      </div>
+
+      <div class="card">
+        <h2>分流方案<small>（每条支路一条 2/3 分器链）</small></h2>
+        <div class="scroll"><table id="planTable"></table></div>
+        <div class="note" id="planNote"></div>
+      </div>
+
+      <div class="card">
+        <h2>候选方案对照<small>（点一行切换曲线）</small></h2>
+        <div class="scroll"><table id="candTable"></table></div>
+        <div class="note" id="candNote"></div>
+      </div>
+
+      <div class="card" id="whyCard">
+        <h2>为什么不选更精确的方案？</h2>
+        <ul class="whynot" id="whyNot"></ul>
       </div>
     </section>
   </div>
-  <footer>本工具用于潮汐供电方案的估算与可视化。若游戏内分流器的物理布局、输出时序或电池到达规则与模型不同，结果需要以实际测试校正。</footer>
-</main>
+
+  <footer>
+    <div><b>模型与依据</b>：《潮汐供电：分流统一公式推导（修正版）》——单线 T = t·d、能量守恒 40A ≥ TQ、分数分流 f = Σ1/d<sub>i</sub>、多线通分后的统一判据 C ≥ 1/f = D/k。</div>
+    <div><b>离散结算</b>：终末地电量按 1 秒一次结算，本页仿真步长就是 1 s（1 tick）。每 tick：到达 → 若空闲则点火 → 燃烧 40 tick 内每秒净增 <code>A − Q</code>，空闲每秒净减 <code>Q</code>，电量钳在 <code>[0, 容量]</code>。</div>
+    <div><b>已知取舍</b>：分流器的物理布局、到达相位是否可按秒错开、以及溢出是否真的完全浪费，都按理想化假设处理，建议以游戏内实测校正。</div>
+  </footer>
+</div>
+
 <script>
-(() => {
+/* =====================================================================
+ * 潮汐供电 · 分流计算核心（纯函数，无 DOM 依赖）
+ * 依据：《潮汐供电：分流统一公式推导（修正版）》
+ *   单线：  T = t·d,  d = 2^x2·3^x3,  C = 40A/(tQ) ≥ d
+ *   多线：  Σ 1/d_i ≤ 1/C  ⟺  1/f = D/k ≤ C
+ *   统一：  C ≥ n·R_n / Σ_i (R_n/d_i) = D/k,  D = lcm(d_i) = 2^a·3^b
+ * 离散：  终末地按 1 s 结算一次电量 → 仿真步长 = 1 tick = 1 s
+ * ===================================================================== */
+(function (root) {
+  'use strict';
+
+  const TAU = 40;            // 一块电池的燃烧时长（秒）
+  const TICK = 1;            // 游戏结算步长：1 秒
+  const TICK_CAP = 800000;   // 单次仿真的最大 tick 数
+  const PERIODS = 6;         // 仿真几个公共周期（前 5 个热机，最后 1 个算稳态）
+  const LCM_CAP = 4e6;       // 公共周期上限（秒）
+
+  /* ------------------------- 基础工具 ------------------------- */
+  function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const r = a % b; a = b; b = r; } return a || 1; }
+  function lcm(a, b) { return Math.round(a / gcd(a, b) * b); }
+  function ipow(base, e) { let r = 1; while (e-- > 0) r *= base; return r; }
+  function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+  /** 阈值 C = 40A/(tQ) —— 分流倍数的上限 */
+  function threshold(A, Q, t) { return 40 * A / (t * Q); }
+
+  /* ------------------------- 权重分解 -------------------------
+   * 把构造数 k 拆成若干 w_i = 2^p·3^q（0≤p≤a, 0≤q≤b）之和，
+   * 对应支路 d_i = D/w_i（D = 2^a·3^b）。返回项数最少的一组解。
+   * ------------------------------------------------------------ */
+  function weightList(a, b) {
+    const out = [];
+    for (let p = 0; p <= a; p++) for (let q = 0; q <= b; q++) out.push({ p, q, w: ipow(2, p) * ipow(3, q) });
+    out.sort((x, y) => y.w - x.w || x.p - y.p || x.q - y.q);
+    const uniq = [];
+    for (const it of out) if (!uniq.length || uniq[uniq.length - 1].w !== it.w) uniq.push(it);
+    return uniq;
+  }
+
+  function decompose(a, b, k, nMax, deadline, budget) {
+    const ws = weightList(a, b);
+    const state = { nodes: 0, failed: new Set(), over: false };
+    const maxDepth = Math.min(nMax, 8);
+    for (let depth = 1; depth <= maxDepth; depth++) {
+      const res = dfs(k, 0, depth, []);
+      if (res) return res;
+      if (state.over) return null;
+    }
+    return null;
+
+    function dfs(rem, start, left, path) {
+      if (++state.nodes > budget) { state.over = true; return null; }
+      if ((state.nodes & 1023) === 0 && Date.now() > deadline) { state.over = true; return null; }
+      if (rem === 0) return path.slice();
+      if (left === 0 || start >= ws.length) return null;
+      if (rem > left * ws[start].w) return null;   // 剩下每项都 ≤ 当前可选最大权重
+      if (rem < left) return null;                 // 每项至少是 1
+      const key = rem * 1000 + start * 10 + left;
+      if (state.failed.has(key)) return null;
+      for (let i = start; i < ws.length; i++) {
+        const w = ws[i].w;
+        if (w > rem) continue;
+        path.push(ws[i]);
+        const r = dfs(rem - w, i, left - 1, path);
+        if (r) return r;
+        path.pop();
+        if (state.over) return null;
+      }
+      state.failed.add(key);
+      return null;
+    }
+  }
+
+  /* ------------------------- 方案搜索 -------------------------
+   * 枚举 D = 2^a·3^b，取 k ≥ D/C（保证 D/k ≤ C），
+   * 把 k 拆成 2^x·3^y 权重之和 → 支路 d_i = D/w_i。
+   * ------------------------------------------------------------ */
+  const PRESETS = {
+    fast: { aMax: 8, bMax: 3, dMax: 20000, kWindow: 6, nMax: 5, budgetMs: 900 },
+    standard: { aMax: 10, bMax: 4, dMax: 120000, kWindow: 8, nMax: 6, budgetMs: 1600 },
+    deep: { aMax: 12, bMax: 5, dMax: 800000, kWindow: 10, nMax: 7, budgetMs: 2600 }
+  };
+
+  function searchPlans(opt) {
+    const A = opt.A, Q = opt.Q, t = opt.t, tau = opt.tau || TAU;
+    const C = threshold(A, Q, t);
+    const preset = PRESETS[opt.depth] || PRESETS.standard;
+    const aMax = opt.aMax != null ? opt.aMax : preset.aMax;
+    const bMax = opt.bMax != null ? opt.bMax : preset.bMax;
+    const dMax = opt.dMax != null ? opt.dMax : preset.dMax;
+    const kWindow = opt.kWindow != null ? opt.kWindow : preset.kWindow;
+    const nMax = opt.nMax != null ? opt.nMax : preset.nMax;
+    const strict = opt.strict !== false;                  // 与文档一致：D/k 为最简分数
+    const deadline = Date.now() + (opt.budgetMs != null ? opt.budgetMs : preset.budgetMs);
+    const nodeBudget = 120000;
+
+    const found = new Map();
+    let truncated = false, scanned = 0;
+
+    for (let a = 0; a <= aMax && !truncated; a++) {
+      const pa = ipow(2, a);
+      if (pa > dMax) break;
+      for (let b = 0; b <= bMax; b++) {
+        const D = pa * ipow(3, b);
+        if (D > dMax) break;
+        if (D < 2) continue;
+        const kLo = Math.max(1, Math.ceil(D / C - 1e-9));
+        const kHi = Math.min(D * 12, kLo + kWindow);
+        for (let k = kLo; k <= kHi; k++) {
+          if (D / k > C + 1e-9) continue;
+          scanned++;
+          const terms = decompose(a, b, k, nMax, deadline, nodeBudget);
+          if (!terms) { if (Date.now() > deadline) { truncated = true; break; } continue; }
+          if (strict) {
+            const allX2Zero = terms.every(x => x.p === a);
+            const allX3Zero = terms.every(x => x.q === b);
+            if (a > 0 && k % 2 === 0 && !allX2Zero) continue;
+            if (b > 0 && k % 3 === 0 && !allX3Zero) continue;
+          }
+          const branches = terms.map(x => {
+            const x2 = a - x.p, x3 = b - x.q;
+            const d = ipow(2, x2) * ipow(3, x3);
+            return { x2, x3, d, T: t * d };
+          });
+          // 物理下限：任何一条支路的输出周期都必须长于燃烧时长，否则电池会排队积压
+          if (branches.some(br => br.T <= tau)) continue;
+          const ds = branches.map(br => br.d).sort((x, y) => x - y);
+          const key = ds.join('*');
+          if (found.has(key)) continue;
+          let Ld = 1;
+          for (const d of ds) { Ld = lcm(Ld, d); if (Ld > LCM_CAP) break; }
+          if (Ld > LCM_CAP) continue;
+          let kk = 0;
+          for (const d of ds) kk += Ld / d;
+          const ratio = kk / Ld;                 // Σ 1/d_i（送达率）
+          const dEff = Ld / kk;                  // 有效减速倍数 = D/k
+          if (dEff > C + 1e-9) continue;
+          const byD = new Map();
+          branches.forEach((br, i) => {
+            const kk2 = br.x2 + ',' + br.x3;
+            if (!byD.has(kk2)) byD.set(kk2, { x2: br.x2, x3: br.x3, d: br.d, count: 0, idx: [], T: br.T });
+            const g = byD.get(kk2);
+            g.count++; g.idx.push(i);
+          });
+          const groups = [...byD.values()].sort((x, y) => x.d - y.d);
+          const complexity = branches.reduce((s, br) => s + br.x2 + br.x3, 0);
+          const net = buildNetwork(groups);
+          const minX2 = Math.min(...groups.map(x => x.x2));
+          const minX3 = Math.min(...groups.map(x => x.x3));
+          const sharedCost = net ? net.count : complexity - (groups.length - 1) * (minX2 + minX3);
+          found.set(key, {
+            ds, k: kk, D: Ld, ratio, dEff, precision: dEff / C,
+            a, b, kRaw: k, DRaw: D, branches, groups, n: branches.length,
+            weights: branches.map(br => Ld / br.d),
+            complexity, sharedCost, net, L: t * Ld
+          });
+        }
+        if (Date.now() > deadline) { truncated = true; break; }
+      }
+    }
+
+    const plans = [...found.values()];
+    plans.sort((x, y) => y.precision - x.precision || x.complexity - y.complexity || x.n - y.n);
+    return { C, plans, truncated, scanned };
+  }
+
+  /* ------------------------- 分流器接法（支持多根独立树） ------------------------- */
+  function buildTrie(paths, groups) {
+    const mkNode = (type, parent) => ({ type, parent, ch: new Map(), terms: [], depth: parent ? parent.depth + 1 : 0, shared: 0 });
+    const root = mkNode('root', null);
+    const nodes = [root];
+    paths.forEach((p, gi) => {
+      let node = root;
+      for (const ch of p) {
+        if (!node.ch.has(ch)) { const n = mkNode(ch, node); node.ch.set(ch, n); nodes.push(n); }
+        node = node.ch.get(ch);
+      }
+      node.terms.push(gi);
+    });
+    let violations = 0;
+    for (const n of nodes) {
+      if (n.type === 'root') continue;
+      let need = n.ch.size;
+      for (const gi of n.terms) need += groups[gi].count;
+      const arity = n.type === '2' ? 2 : 3;
+      n.need = need; n.arity = arity;
+      if (need > arity) violations++;
+    }
+    (function walk(n) {
+      let c = 0;
+      for (const gi of n.terms) c += groups[gi].count;
+      for (const child of n.ch.values()) c += walk(child);
+      n.subBranches = c;
+      n.shared = c >= 2;
+      return c;
+    })(root);
+    return { root, nodes, count: nodes.length - 1, violations, leaves: nodes.filter(n => !n.ch.size) };
+  }
+
+  function partitionsOf(list, maxParts) {
+    const out = [];
+    const groups = [];
+    (function rec(i) {
+      if (i === list.length) { out.push(groups.map(g => g.slice())); return; }
+      for (let g = 0; g < groups.length; g++) { groups[g].push(list[i]); rec(i + 1); groups[g].pop(); }
+      if (groups.length < maxParts) { groups.push([list[i]]); rec(i + 1); groups.pop(); }
+    })(0);
+    return out;
+  }
+
+  function buildNetworkExact(groups) {
+    if (!groups.length) return null;
+    const memo = new Map();
+    let budget = 60000;
+    const keyOf = list => list.slice().sort((a, b) => a.gi - b.gi)
+      .map(i => i.gi + ':' + i.x2 + ',' + i.x3 + ',' + i.count).join(';');
+
+    function portCost(list) {
+      const live = list.filter(i => i.x2 > 0 || i.x3 > 0);
+      if (!live.length) return { cost: 0, term: [], kids: [] };
+      const key = keyOf(live);
+      if (memo.has(key)) return memo.get(key);
+      if (--budget < 0) return null;
+      let best = null;
+      for (const t of [2, 3]) {
+        const axis = t === 2 ? 'x2' : 'x3';
+        if (!live.every(i => i[axis] > 0)) continue;
+        const dec = live.map(i => ({ x2: axis === 'x2' ? i.x2 - 1 : i.x2, x3: axis === 'x3' ? i.x3 - 1 : i.x3, count: i.count, gi: i.gi }));
+        const zeros = dec.filter(i => i.x2 === 0 && i.x3 === 0);
+        const rest = dec.filter(i => i.x2 > 0 || i.x3 > 0);
+        const used = zeros.reduce((s, i) => s + i.count, 0);
+        const free = t - used;
+        if (free < 0) continue;
+        for (const parts of partitionsOf(rest, free)) {
+          let cost = 1; const kids = []; let bad = false;
+          for (const part of parts) {
+            const r = portCost(part);
+            if (!r || r.cost == null) { bad = true; break; }
+            cost += r.cost; kids.push(r);
+          }
+          if (bad) continue;
+          if (!best || cost < best.cost) best = { cost, type: t, term: zeros.map(i => i.gi), kids };
+        }
+      }
+      memo.set(key, best);
+      return best;
+    }
+
+    let best = null;
+    for (const parts of partitionsOf(groups.map((g, gi) => ({ x2: g.x2, x3: g.x3, count: g.count, gi })), groups.length)) {
+      let cost = 0; const roots = []; let bad = false;
+      for (const part of parts) {
+        const r = portCost(part);
+        if (!r) { bad = true; break; }
+        cost += r.cost; roots.push(r);
+      }
+      if (bad) continue;
+      if (!best || cost < best.cost) best = { cost, roots };
+    }
+    if (!best) return null;
+
+    const mkNode = (type, parent) => ({ type, parent, ch: new Map(), terms: [], depth: parent ? parent.depth + 1 : 0, shared: 0 });
+    const forestRoots = [];
+    let totalNodesCount = 0;
+
+    for (const rootSpec of best.roots) {
+      const treeRoot = mkNode('root', null);
+      forestRoots.push(treeRoot);
+      const allNodes = [treeRoot];
+
+      function convert(specNode, parentNode) {
+        for (const gi of specNode.term) {
+          parentNode.terms.push(gi);
+        }
+        for (const kidSpec of specNode.kids) {
+          const typeStr = String(kidSpec.type);
+          let childNode = null;
+          for (const c of parentNode.ch.values()) {
+            if (c.type === typeStr) { childNode = c; break; }
+          }
+          if (!childNode) {
+            childNode = mkNode(typeStr, parentNode);
+            parentNode.ch.set(typeStr, childNode);
+            allNodes.push(childNode);
+          }
+          convert(kidSpec, childNode);
+        }
+      }
+      convert(rootSpec, treeRoot);
+
+      let violations = 0;
+      for (const n of allNodes) {
+        if (n.type === 'root') continue;
+        let need = n.ch.size;
+        for (const gi of n.terms) need += groups[gi].count;
+        const arity = n.type === '2' ? 2 : 3;
+        n.need = need; n.arity = arity;
+        if (need > arity) violations++;
+      }
+      (function walk(n) {
+        let c = 0;
+        for (const gi of n.terms) c += groups[gi].count;
+        for (const child of n.ch.values()) c += walk(child);
+        n.subBranches = c;
+        n.shared = c >= 2;
+        return c;
+      })(treeRoot);
+
+      if (violations > 0) return null;
+      totalNodesCount += (allNodes.length - 1);
+    }
+
+    return {
+      roots: forestRoots,
+      count: totalNodesCount,
+      perfect: true
+    };
+  }
+
+  function buildNetwork(groups) {
+    if (!groups.length) return null;
+    const exact = buildNetworkExact(groups);
+    if (exact) return exact;
+    const items = groups.map(g => {
+      const a = '2'.repeat(g.x2) + '3'.repeat(g.x3);
+      const b = '3'.repeat(g.x3) + '2'.repeat(g.x2);
+      return a === b ? [a] : [a, b];
+    });
+    const total = items.reduce((s, o) => s * o.length, 1);
+    const combos = [];
+    if (total <= 1024) {
+      const idx = new Array(items.length).fill(0);
+      for (;;) {
+        combos.push(items.map((o, i) => o[idx[i]]));
+        let i = items.length - 1;
+        while (i >= 0) { idx[i]++; if (idx[i] < items[i].length) break; idx[i] = 0; i--; }
+        if (i < 0) break;
+      }
+    } else combos.push(items.map(o => o[0]));
+    let best = null, fallback = null;
+    for (const paths of combos) {
+      const t = buildTrie(paths, groups);
+      if (!t.violations) { if (!best || t.count < best.count) best = t; }
+      else if (!fallback || (t.count + t.violations) < (fallback.count + fallback.violations)) fallback = t;
+    }
+    const net = best || fallback;
+    if (net && net.root) {
+      net.roots = [net.root];
+    }
+    net.perfect = !!best;
+    return net;
+  }
+
+  /* ------------------------- 相位错开 -------------------------
+   * 每条支路在游戏里可以按整数秒错开投入时刻（相位），
+   * 这里用贪心：逐条放置，选让“全体到达最小间隔”最大的相位。
+   * ------------------------------------------------------------ */
+  function minGapOfSorted(sorted, L) {
+    if (sorted.length < 2) return sorted.length ? L : Infinity;
+    let g = Infinity;
+    for (let i = 1; i < sorted.length; i++) g = Math.min(g, sorted[i] - sorted[i - 1]);
+    g = Math.min(g, sorted[0] + L - sorted[sorted.length - 1]);
+    return g;
+  }
+
+  function choosePhases(plan, t) {
+    const L = plan.L;
+    const order = plan.branches.map((_, i) => i)
+      .sort((i, j) => plan.branches[i].d - plan.branches[j].d);
+    const phases = new Array(plan.branches.length).fill(0);
+    let placed = [];
+    for (const i of order) {
+      const br = plan.branches[i];
+      const T = t * br.d;
+      const cnt = Math.max(1, Math.round(L / T));
+      if (!placed.length) {
+        phases[i] = 0;
+        for (let j = 0; j < cnt; j++) placed.push(j * T);
+        placed.sort((x, y) => x - y);
+        continue;
+      }
+      const gaps = [];
+      for (let j = 0; j < placed.length; j++) {
+        const a0 = placed[j], a1 = (j + 1 < placed.length) ? placed[j + 1] : placed[0] + L;
+        gaps.push({ a0, a1, len: a1 - a0 });
+      }
+      gaps.sort((x, y) => y.len - x.len);
+      const cands = new Set([0]);
+      for (let g = 0; g < Math.min(8, gaps.length); g++) {
+        const mid = Math.round((gaps[g].a0 + gaps[g].a1) / 2);
+        cands.add(((mid % T) + T) % T);
+        cands.add(((Math.round(gaps[g].a0) % T) + T) % T);
+      }
+      for (let j = 0; j < cnt; j++) cands.add(Math.round(j * L / cnt) % T);
+      let best = null;
+      for (const phi of cands) {
+        const times = [];
+        for (let j = 0; j < cnt; j++) times.push(((phi + j * T) % L + L) % L);
+        const all = placed.concat(times).sort((x, y) => x - y);
+        const g = minGapOfSorted(all, L);
+        if (!best || g > best.g + 1e-9) best = { g, phi, times };
+      }
+      phases[i] = best.phi;
+      placed = placed.concat(best.times).sort((x, y) => x - y);
+    }
+    return phases;
+  }
+
+  /* ------------------------- 1 秒离散仿真 -------------------------
+   * 每个 tick（1 s）：先结算到达 → 决定电池是否燃烧 → 电量增减 → 钳位。
+   * 燃烧 40 个 tick，期间每秒净增 (A - Q)，空闲每秒净减 Q。
+   * -------------------------------------------------------------- */
+  function simulate(plan, p) {
+    const L = plan.L;
+    const horizon = Math.min(PERIODS * L, TICK_CAP);
+    const tau = p.tau || TAU;
+    const capacity = p.capacity;
+    const E0 = clamp(p.E0 != null ? p.E0 : capacity, 0, capacity);
+    const phases = plan.phases || new Array(plan.branches.length).fill(0);
+
+    const arrivals = [];                 // 到达 tick（整数秒）
+    const perBranch = plan.branches.map(() => []);
+    plan.branches.forEach((br, i) => {
+      const T = p.t * br.d;
+      const list = perBranch[i];
+      for (let s = phases[i]; s < horizon; s += T) { arrivals.push(s); list.push(s); }
+    });
+    arrivals.sort((a, b) => a - b);
+
+    const E = new Float64Array(horizon + 1);
+    const burn = new Uint8Array(horizon);
+    E[0] = E0;
+    let cur = E0, ai = 0, burnLeft = 0;
+    let saturatedAt = (E0 >= capacity - 1e-9) ? 0 : -1;
+    let queueMax = 0, waitedArrivals = 0, deficit = 0, overflow = 0, maxWait = 0;
+    const qTimes = [];            // 队列里每块电池的到达 tick
+    let qHead = 0;
+
+    for (let s = 0; s < horizon; s++) {
+      while (ai < arrivals.length && arrivals[ai] === s) { qTimes.push(s); ai++; }
+      let burning = false;
+      if (burnLeft > 0) { burnLeft--; burning = true; }
+      else if (qHead < qTimes.length) {
+        const at = qTimes[qHead++];
+        const w = s - at;                       // 这块电池等了多久才点火
+        if (w > 0) { waitedArrivals++; if (w > maxWait) maxWait = w; }
+        burnLeft = tau - 1; burning = true;
+      }
+      const qLen = qTimes.length - qHead;
+      if (qLen > queueMax) queueMax = qLen;
+      if (qHead > 4096) { qTimes.splice(0, qHead); qHead = 0; }
+      cur += burning ? (p.A - p.Q) : (-p.Q);
+      if (cur > capacity) { overflow += cur - capacity; cur = capacity; }
+      if (cur < 0) { deficit += -cur; cur = 0; }
+      if (saturatedAt < 0 && cur >= capacity - 1e-9) saturatedAt = s + 1;
+      E[s + 1] = cur;
+      burn[s] = burning ? 1 : 0;
+    }
+    const finalQueue = qTimes.length - qHead;
+
+    const steadyStart = Math.max(0, horizon - L);
+    let sMin = Infinity, sMax = -Infinity, blackout = 0, burnTicks = 0, sOverflow = 0;
+    for (let s = steadyStart; s < horizon; s++) {
+      const v = E[s];
+      if (v < sMin) sMin = v;
+      if (v > sMax) sMax = v;
+      if (v <= 1e-9) blackout++;
+      if (burn[s]) burnTicks++;
+      const raw = v + (burn[s] ? (p.A - p.Q) : (-p.Q));
+      if (raw > capacity) sOverflow += raw - capacity;
+    }
+    const span = horizon - steadyStart;
+    const avgSupply = span > 0 ? burnTicks * p.A / span : 0;
+
+    return {
+      E, burn, horizon, L, arrivals, perBranch, phases,
+      saturatedAt, queueMax, waitedArrivals, finalQueue, maxWait, deficit, overflow,
+      steady: {
+        start: steadyStart, end: horizon, min: sMin, max: sMax,
+        blackout, burnTicks, avgSupply, span, overflow: sOverflow,
+        supplyRatio: p.Q > 0 ? avgSupply / p.Q : Infinity,
+        wasteRatio: (burnTicks * p.A) > 0 ? 1 - Math.min(1, p.Q * span / (burnTicks * p.A)) : 0
+      },
+      warmStart: 0
+    };
+  }
+
+  function computeAll(p) {
+    const t0 = Date.now();
+    const search = searchPlans(p);
+    const plans = search.plans;
+    const pass = [], rejected = [], skipped = [];
+    let evaluated = 0;
+    const evalBudget = p.evalMs != null ? p.evalMs : 2600;
+    const evalDeadline = Date.now() + evalBudget;
+    const want = p.want != null ? p.want : 6;
+
+    for (const plan of plans) {
+      if (pass.length >= want || Date.now() > evalDeadline) break;
+      if (PERIODS * plan.L > TICK_CAP) { plan.note = '公共周期 ' + plan.L + ' s 过长，无法完整仿真'; plan.skip = true; skipped.push(plan); continue; }
+      plan.phases = choosePhases(plan, p.t);
+      const seq = [];
+      plan.branches.forEach((br, i) => {
+        const n = Math.round(plan.L / br.T);
+        for (let j = 0; j < n; j++) seq.push(((plan.phases[i] + j * br.T) % plan.L + plan.L) % plan.L);
+      });
+      seq.sort((a, b) => a - b);
+      plan.minGap = minGapOfSorted(seq, plan.L);
+      evaluated++;
+      const sim = simulate(plan, p);
+      plan.stat = {
+        min: sim.steady.min, max: sim.steady.max, blackout: sim.steady.blackout,
+        waited: sim.waitedArrivals, overflow: sim.steady.overflow, span: sim.steady.span,
+        supplyRatio: sim.steady.supplyRatio, saturatedAt: sim.saturatedAt,
+        horizon: sim.horizon, periods: PERIODS,
+        maxWait: sim.maxWait, queueMax: sim.queueMax, finalQueue: sim.finalQueue
+      };
+      if (sim.maxWait > (p.tau || TAU) + 1e-9 || sim.finalQueue > 1) {
+        plan.note = `电池积压：最长排队 ${sim.maxWait.toFixed(0)} s、末尾仍有 ${sim.finalQueue} 块在等`;
+        rejected.push(plan);
+        continue;
+      }
+      if (sim.steady.min < p.margin - 1e-9) {
+        plan.note = `稳态最低电量 ${Math.round(sim.steady.min)} < 安全线 ${Math.round(p.margin)}（电池投放太稀疏，缓冲被抽干）`;
+        rejected.push(plan);
+        continue;
+      }
+      if (sim.steady.blackout > 0) { plan.note = `稳态断电 ${sim.steady.blackout} s`; rejected.push(plan); continue; }
+      const dominated = pass.some(o =>
+        o.precision >= plan.precision - 1e-9 &&
+        o.sharedCost <= plan.sharedCost &&
+        o.stat.min >= plan.stat.min - 1e-9 &&
+        (o.precision > plan.precision + 1e-9 || o.sharedCost < plan.sharedCost || o.stat.min > plan.stat.min + 1e-9));
+      if (dominated) { plan.note = '被更优方案全面压制（精度、分器数、稳态余量都不占优）'; rejected.push(plan); continue; }
+      plan.sim = sim;
+      pass.push(plan);
+    }
+    pass.sort((a, b) => b.precision - a.precision || a.complexity - b.complexity || a.n - b.n);
+    const best = pass[0] || null;
+    let bestSingle = null;
+    for (const plan of plans) {
+      if (bestSingle) break;
+      if (plan.n !== 1) continue;
+      if (plan.stat) {
+        if (plan.stat.min >= p.margin - 1e-9 && plan.stat.blackout <= 0 && plan.stat.maxWait <= (p.tau || TAU)) bestSingle = plan;
+        continue;
+      }
+      if (PERIODS * plan.L > TICK_CAP) continue;
+      plan.phases = choosePhases(plan, p.t);
+      plan.minGap = plan.L;
+      const sim1 = simulate(plan, p);
+      plan.stat = {
+        min: sim1.steady.min, max: sim1.steady.max, blackout: sim1.steady.blackout,
+        waited: sim1.waitedArrivals, overflow: sim1.steady.overflow, span: sim1.steady.span,
+        supplyRatio: sim1.steady.supplyRatio, saturatedAt: sim1.saturatedAt,
+        horizon: sim1.horizon, periods: PERIODS,
+        maxWait: sim1.maxWait, queueMax: sim1.queueMax, finalQueue: sim1.finalQueue
+      };
+      if (plan.stat.min >= p.margin - 1e-9 && plan.stat.blackout <= 0 && plan.stat.maxWait <= (p.tau || TAU)) { plan.sim = sim1; bestSingle = plan; }
+    }
+    const whyNot = [];
+    for (const plan of [...rejected, ...skipped]) {
+      if (best && plan.precision <= best.precision + 1e-9) continue;
+      whyNot.push(plan);
+      if (whyNot.length >= 3) break;
+    }
+    return {
+      C: search.C, plans, best, alternatives: pass.slice(1), bestSingle,
+      rejected, skipped, whyNot, evaluated, truncated: search.truncated,
+      scanned: search.scanned, elapsed: (Date.now() - t0) / 1000
+    };
+  }
+
+  const api = {
+    TAU, TICK, TICK_CAP, PERIODS, PRESETS,
+    gcd, lcm, ipow, threshold, weightList, decompose, buildNetwork, buildNetworkExact, buildTrie,
+    searchPlans, choosePhases, simulate, computeAll, minGapOfSorted
+  };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.TidalCore = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+
+<script>
+(function(){
 'use strict';
+const Core = window.TidalCore;
 const $ = id => document.getElementById(id);
-const presets = {
-  fast: {expMax:8, dMax:5000, kWindow:2, candidates:600},
-  standard: {expMax:10, dMax:50000, kWindow:3, candidates:1200},
-  deep: {expMax:12, dMax:250000, kWindow:4, candidates:1800}
+const els = {
+  Q:$('Q'), A:$('A'), t:$('t'), capacity:$('capacity'), margin:$('margin'), E0mode:$('E0mode'),
+  capacityR:$('capacityR'), marginR:$('marginR'),
+  nMax:$('nMax'), depth:$('depth'), strict:$('strict'), status:$('status'),
+  verdict:$('verdict'), metrics:$('metrics'), formula:$('formula'), chart:$('chart'),
+  planTable:$('planTable'), planNote:$('planNote'), candTable:$('candTable'), candNote:$('candNote'),
+  whyNot:$('whyNot'), whyCard:$('whyCard'), simnote:$('simnote'), net:$('net')
 };
-let chartData = null, view = null, hover = null, drag = null;
-let splitState = { tx: 0, ty: 0, scale: 1, baseW: 1000, baseH: 300 };
-let splitPointer = null;
-let splitInit = false;
-const MAX_POINTS = 40000;
-
-function gcd(a,b){while(b){const r=a%b;a=b;b=r;}return Math.abs(a);}
-function lcm(a,b){if(!a||!b)return Math.max(a,b);return Math.min(2e6,Math.round(a/gcd(a,b)*b));}
-function lcmArr(a){return a.reduce((x,y)=>lcm(x,y),1);}
-function fmt(v,d=2){return Number.isFinite(v)?v.toLocaleString('zh-CN',{maximumFractionDigits:d}):'—';}
-function setStatus(s){$('status').textContent=s;}
-function powers(a,b){return Math.pow(2,a)*Math.pow(3,b);}
-function getInputs(){
- const t=+$('t').value,A=+$('A').value,Q=+$('Q').value,capacity=+$('capacity').value,margin=+$('margin').value,budget=+$('budget').value;
- if(!(t>0&&A>0&&Q>0&&capacity>0&&margin>=0&&budget>0))throw new Error('请检查输入：t、A、Q、容量和时间预算必须大于 0，安全电量不能小于 0。');
- if(A<=Q)throw new Error('当前模型要求 A > Q，否则电池燃烧期间也无法补足负载消耗。');
- return {t,A,Q,capacity,margin,budget,depth:$('depth').value,maxSub:+$('maxSub').value};
+const DEFAULT = { Q:325, A:1600, t:2, capacity:100000, margin:500, nMax:6, depth:'deep', strict:true, E0mode:'zero' };
+const RANGES = { capacity:'capacityR', margin:'marginR' };
+function setField(id, v){
+  els[id].value = v;
+  const r = RANGES[id] && els[RANGES[id]];
+  if(r) r.value = Math.min(+r.max, Math.max(+r.min, +v || 0));
 }
-function decompose(a,b,k,maxTerms,deadline){
- const D=powers(a,b), avail=[];
- for(let ai=0;ai<=a;ai++)for(let bi=0;bi<=b;bi++){
-  const d=powers(ai,bi);avail.push({ai,bi,d,w:Math.round(D/d)});
- }
- avail.sort((x,y)=>y.w-x.w);
- const maxDepth=Math.min(maxTerms,k);
- for(let depth=1;depth<=maxDepth;depth++){
-  let nodes=0;
-  function dfs(rem,start,left,path){
-   if(performance.now()>deadline||++nodes>35000)return null;
-   if(left===0)return rem===0?path:null;
-   if(rem<=0||start>=avail.length)return null;
-   if(rem>left*avail[start].w||rem<left*avail[avail.length-1].w)return null;
-   for(let i=start;i<avail.length;i++){
-    const item=avail[i];if(item.w>rem)continue;
-    const out=dfs(rem-item.w,i,left-1,path.concat(item));
-    if(out)return out;
-   }
-   return null;
-  }
-  const res=dfs(k,0,depth,[]);
-  if(res)return res.map(x=>({ai:x.ai,bi:x.bi,d:x.d}));
-  if(performance.now()>deadline)break;
- }
- return null;
+const state = { res:null, plan:null, view:{x0:0,x1:1}, hover:null, drag:null, pointers:new Map(), pinch:null };
+
+function fmt(v,d){ if(!isFinite(v)) return '—';
+  return v.toLocaleString('zh-CN',{maximumFractionDigits:d==null?2:d}); }
+function mmss(s){
+  if(s<60) return fmt(s,0)+' s';
+  const h=Math.floor(s/3600), m=Math.floor(s%3600/60), ss=Math.round(s%60);
+  return (h?h+' h ':'')+m+' m '+ss+' s';
 }
-function genPool(p,deadline){
- const {t,A,Q}=p,Cmax=40*A/(t*Q),cfg=presets[p.depth],pool=[];
- for(let a=0;a<=cfg.expMax;a++){
-  const da=2**a;if(da>cfg.dMax)break;
-  for(let b=0;b<=cfg.expMax;b++){
-   const D=da*3**b;if(D<2)continue;if(D>cfg.dMax)break;
-   const center=D/Cmax,lo=Math.max(1,Math.floor(center)-cfg.kWindow),hi=Math.min(D-1,Math.ceil(center)+cfg.kWindow);
-   for(let k=lo;k<=hi;k++){
-    if(k<=0||k>=D||k%2===0||k%3===0)continue;
-    const effD=D/k;if(effD>Cmax+1e-10)continue;
-    const comps=decompose(a,b,k,p.maxSub,deadline);
-    if(!comps||!comps.length||comps.length>p.maxSub)continue;
-    const weightSum=comps.reduce((s,c)=>s+Math.round(D/c.d),0);
-    if(weightSum!==k)continue;
-    const Ts=comps.map(c=>t*c.d);
-    if(Ts.some(T=>T<=40+1e-8))continue;
-    pool.push({a,b,k,D,f:k/D,effD,comps,ds:comps.map(c=>c.d),Ts,n:comps.length,complexity:comps.reduce((s,c)=>s+c.ai+c.bi,0),expStr:`${k}/(${a?`2^${a}`:'1'}${b?'·3^'+b:''})`});
-   }
-   if(performance.now()>deadline)return pool;
-  }
- }
- return pool;
-}
-function arrivalsFor(info, totalTime, includeEnd, skipFirst) {
-  const Ts = info.Ts;
-  if (!Ts.length) return [];
-  const tmin = Math.min(...Ts), out = [];
-  Ts.forEach((Ti, i) => {
-    const offset = i * tmin / Ts.length;
-    const startK = skipFirst ? 1 : 0;
-    const maxK = Math.ceil(totalTime / Ti) + 2;
-    for (let k = startK; k < maxK; k++) {
-      const ta = offset + k * Ti;
-      if (includeEnd ? ta > totalTime + 1e-8 : ta >= totalTime - 1e-8) break;
-      if (ta >= 0) out.push(ta);
-    }
-  });
-  out.sort((a, b) => a - b);
-  return out;
-}
-function noPileup(arrivals, L){
- const uniq=[];for(const x of arrivals)if(!uniq.length||Math.abs(x-uniq[uniq.length-1])>1e-8)uniq.push(x);
- if(uniq.length<2)return {ok:true,gap:Infinity};
- let gap=Infinity;for(let i=1;i<uniq.length;i++)gap=Math.min(gap,uniq[i]-uniq[i-1]);
- gap=Math.min(gap,L+uniq[0]-uniq[uniq.length-1]);
- return {ok:gap>40-1e-8,gap};
-}
-function energyAtEvents(arrivals, totalTime, p) {
-  const { A, Q, capacity } = p;
-  let cur = capacity, min = capacity, curEnd = 0;
-  const burns = [];
-  for (const arr of arrivals) {
-    const s = Math.max(arr, curEnd), e = s + 40;
-    burns.push([s, e]); curEnd = e;
-  }
-  const critical = [0, totalTime];
-  for (const [s, e] of burns) {
-    if (s >= 0 && s <= totalTime) critical.push(s);
-    if (e >= 0 && e <= totalTime) critical.push(e);
-  }
-  critical.sort((a, b) => a - b);
-  const uniq = critical.filter((v, i) => !i || v - critical[i-1] > 1e-8);
-  const times = [0], energy = [capacity];
-  let bi = 0;
-  for (let i = 0; i < uniq.length - 1; i++) {
-    const t0 = uniq[i], t1 = uniq[i+1];
-    if (t1 <= t0) continue;
-    const mid = (t0 + t1) / 2;
-    while (bi < burns.length && burns[bi][1] <= mid) bi++;
-    const burning = bi < burns.length && burns[bi][0] <= mid && mid < burns[bi][1];
-    const slope = burning ? A - Q : -Q;
-    const eRaw = cur + slope * (t1 - t0);
-    let eEnd = eRaw;
-    if (slope > 0 && eRaw > capacity) eEnd = capacity;
-    if (slope < 0 && eRaw < 0) eEnd = 0;
-    if (slope > 0 && cur < capacity && eRaw > capacity) {
-      const hit = t0 + (capacity - cur) / slope;
-      if (hit > t0 + 1e-9 && hit < t1 - 1e-9) { times.push(hit); energy.push(capacity); }
-    } else if (slope < 0 && cur > 0 && eRaw < 0) {
-      const hit = t0 + (0 - cur) / slope;
-      if (hit > t0 + 1e-9 && hit < t1 - 1e-9) { times.push(hit); energy.push(0); }
-    }
-    times.push(t1); energy.push(eEnd);
-    cur = eEnd;
-    if (cur < min) min = cur;
-  }
-  return { times, energy, min, burns };
-}
-function candidateSearch(p){
- const started=performance.now(),deadline=started+p.budget*1000,cfg=presets[p.depth],Cmax=40*p.A/(p.t*p.Q);
- let pool=genPool(p,deadline);
- if(!pool.length)return {best:null,elapsed:(performance.now()-started)/1000};
- pool.forEach(x=>x.accuracy=x.effD/Cmax);
- pool.sort((a,b)=>b.accuracy-a.accuracy);
- pool=pool.slice(0,cfg.candidates);
- const good=[];
- for(const info of pool){
-  if(performance.now()>deadline)break;
-  const Lmult=lcmArr(info.ds);if(Lmult>2000000)continue;
-  const L=p.t*Lmult;
-  const arrivalsL=arrivalsFor(info,L,false,true);
-  if(arrivalsL.length>5000)continue;
-  const pile=noPileup(arrivalsL,L);if(!pile.ok)continue;
-  const totalBurn=arrivalsL.length*40;
-  if((totalBurn-L)/40>1e-6)continue;
-  const arrivalsSteady=arrivalsFor(info, 5*L, true, true);
-  const evAll = energyAtEvents(arrivalsSteady, 5*L, p);
-  let minSteady = p.capacity;
-  for (let i = 0; i < evAll.times.length; i++) {
-    if (evAll.times[i] >= 2*L - 1e-8 && evAll.energy[i] < minSteady) minSteady = evAll.energy[i];
-  }
-  if (minSteady < p.margin) continue;
-  good.push({...info,L,minGap:pile.gap,minEnergy:minSteady,accuracy:info.effD/Cmax});
- }
- if(!good.length)return {best:null,elapsed:(performance.now()-started)/1000};
- good.sort((a,b)=>{
-  if(Math.abs(a.accuracy-b.accuracy)>0.005)return b.accuracy-a.accuracy;
-  return a.complexity-b.complexity||b.accuracy-a.accuracy;
- });
- return {best:good[0],candidates:good,elapsed:(performance.now()-started)/1000};
-}
-function simulateFull(best, p) {
-  const L = best.L;
-  let totalTime;
-  if (L < 60)         totalTime = L * 40;
-  else if (L < 300)   totalTime = L * 20;
-  else if (L < 1800)  totalTime = L * 12;
-  else if (L < 7200)  totalTime = L * 10;
-  else                totalTime = L * 8;
-  if (totalTime < 20000) totalTime = 20000;
-  if (totalTime > 4e6) totalTime = 4e6;
-
-  const arrivals = arrivalsFor(best, totalTime, true, true);
-
-  let ev;
-  if (!arrivals.length) {
-    const eEnd = Math.max(0, p.capacity - p.Q * totalTime);
-    ev = { times: [0, totalTime], energy: [p.capacity, eEnd], min: eEnd };
-  } else {
-    ev = energyAtEvents(arrivals, totalTime, p);
-  }
-
-  let times = ev.times.slice();
-  let energy = ev.energy.slice();
-
-  if (times.length === 0) {
-    times = [0, totalTime];
-    energy = [p.capacity, Math.max(0, p.capacity - p.Q * totalTime)];
-  } else if (times[times.length - 1] < totalTime - 1e-6) {
-    const lastE = energy[energy.length - 1];
-    times.push(totalTime);
-    energy.push(lastE);
-  }
-
-  if (times.length > MAX_POINTS) {
-    const step = Math.ceil(times.length / MAX_POINTS);
-    const t2 = [], e2 = [];
-    for (let i = 0; i < times.length; i += step) {
-      t2.push(times[i]); e2.push(energy[i]);
-    }
-    if (t2[t2.length - 1] !== times[times.length - 1]) {
-      t2.push(times[times.length - 1]);
-      e2.push(energy[energy.length - 1]);
-    }
-    times = t2; energy = e2;
-  }
-
-  let steadyStart = 0;
-  for (let i = 0; i < times.length; i++) {
-    if (energy[i] < 1) steadyStart = times[i];
-  }
-
-  let minSteady = p.capacity;
-  for (let i = 0; i < times.length; i++) {
-    if (times[i] >= steadyStart - 1e-8 && energy[i] < minSteady) minSteady = energy[i];
-  }
-
+function PAL(){
+  const s=getComputedStyle(document.documentElement), g=n=>s.getPropertyValue(n).trim();
   return {
-    times, energy, L, totalTime, steadyStart,
-    minEnergy: minSteady, rawPointCount: ev.times.length
+    plot:g('--cv-plot'), grid:g('--cv-grid'), grid2:g('--cv-grid2'), dimline:g('--cv-dimline'),
+    axis:g('--cv-axis'), text:g('--cv-text'), curve:g('--cv-curve'), halo:g('--cv-halo'), halo2:g('--cv-halo2'),
+    dotbg:g('--cv-dotbg'), dotin:g('--cv-dotin'), accent:g('--cv-accent'), cap:g('--cv-cap'), amber:g('--cv-safe'),
+    violet45:g('--cv-violet'), violet80:g('--cv-violet'), green80:g('--cv-green'), hoverline:g('--cv-hoverline'),
+    labelbg:g('--cv-labelbg'), labelbd:g('--cv-labelbd'), labelfg:g('--cv-labelfg'), labelfg2:g('--cv-labelfg2'),
+    rowidle:g('--cv-rowidle'), outline:g('--cv-outline'),
+    svArrow:g('--sv-arrow'), svEdge:g('--sv-edge'), svEdgeShared:g('--sv-edge-shared'), svAmber:g('--sv-amber'),
+    svOutFill:g('--sv-out-fill'), svOutFg:g('--sv-out-fg'), svOutSub:g('--sv-out-sub'),
+    svRootFill:g('--sv-root-fill'), svRootStroke:g('--sv-root-stroke'), svRootFg:g('--sv-root-fg'), svRootSub:g('--sv-root-sub'),
+    sv2Stroke:g('--sv-2-stroke'), sv2Fill:g('--sv-2-fill'), sv2Fg:g('--sv-2-fg'),
+    sv3Stroke:g('--sv-3-stroke'), sv3Fill:g('--sv-3-fill'), sv3Fg:g('--sv-3-fg')
   };
 }
-function describeComp(c){return `1/${c.d} (2^${c.ai}·3^${c.bi})`;}
-function showResults(best,p,elapsed,sim){
- const Cmax=40*p.A/(p.t*p.Q);
- $('mF').textContent=best.expStr;
- $('mD').textContent=fmt(best.effD,4);
- $('mAcc').textContent=fmt(best.accuracy*100,4)+'%';
- $('mE').textContent=fmt(sim.minEnergy,1);
- $('mGap').textContent=fmt(best.minGap,2)+' s';
- $('mWarm').textContent=fmt(sim.steadyStart,1)+' s';
- $('bestDetails').innerHTML=`<p><b>f：</b>${best.expStr} = ${fmt(best.f,8)}</p><p><b>子流：</b>${best.comps.map(describeComp).join(' + ')}</p><p><b>子流周期：</b>${best.Ts.map(x=>fmt(x,2)+' s').join('，')}</p><p><b>子流数量：</b>${best.n}；硬件复杂度估计：${best.complexity}</p><p><b>理论阈值 Cmax：</b>${fmt(Cmax,6)}</p>`;
- $('simDetails').innerHTML=`<p>搜索耗时：${fmt(elapsed,2)} 秒</p><p>公共周期：${fmt(best.L,2)} 秒（${fmt(best.L/60,2)} 分钟）</p><p>仿真总时长：${fmt(sim.totalTime,1)} 秒（${fmt(sim.totalTime/60,1)} 分钟）</p><p><b>热机结束：${fmt(sim.steadyStart,1)} 秒（${fmt(sim.steadyStart/60,1)} 分钟）</b></p><p>原始数据点：${sim.rawPointCount}；抽稀后：${sim.times.length}</p><p>安全电量阈值：${fmt(p.margin,0)}；容量上限：${fmt(p.capacity,0)}。</p>`;
+function frac(n,d){ return '<span class="frac"><span class="num">'+n+'</span><span class="den">'+d+'</span></span>'; }
+function niceStep(raw){ const p=Math.pow(10,Math.floor(Math.log10(Math.max(raw,1e-9)))); const n=raw/p;
+  return (n<=1?1:n<=2?2:n<=5?5:10)*p; }
+function pow2s(a,b){ return (a?'2<sup>'+a+'</sup>':'')+(a&&b?'·':'')+(b?'3<sup>'+b+'</sup>':''); }
+function chainHTML(x2,x3){
+  let h='<span class="chain">';
+  for(let i=0;i<x2;i++) h+='<i class="s2">2</i>';
+  for(let i=0;i<x3;i++) h+='<i class="s3">3</i>';
+  if(!x2&&!x3) h+='<i class="s2" style="opacity:.5">直连</i>';
+  return h+'</span>';
 }
+function planLabel(p){
+  if(!p) return '—';
+  return p.groups.map(g=>g.d+(g.count>1?'×'+g.count:'')).join(' + ');
+}
+function readParams(){
+  const p = {
+    Q:+els.Q.value, A:+els.A.value, t:+els.t.value,
+    capacity:+els.capacity.value, margin:+els.margin.value,
+    nMax:+els.nMax.value, depth:els.depth.value, strict:els.strict.checked,
+    tau:Core.TAU
+  };
+  const m = els.E0mode.value;
+  p.E0 = m==='full'? p.capacity : (m==='zero'? 0 : p.capacity/2);
+  if(!(p.Q>0&&p.A>0&&p.t>0&&p.capacity>0&&p.margin>=0)) throw new Error('Q、A、t、容量必须大于 0，安全电量不能为负。');
+  if(p.A<=p.Q) throw new Error('需要 A > Q：否则电池燃烧时也补不上缺口，模型不成立。');
+  if(p.nMax<1) p.nMax=1;
+  return p;
+}
+
 function run(){
- try{
-  const p=getInputs();$('run').disabled=true;setStatus('正在搜索候选比例并检查到达间隔、电量稳定性……');
-  setTimeout(()=>{
-   try{
-    const result=candidateSearch(p);
-    if(!result.best){setStatus(`未找到符合条件的方案（用时 ${fmt(result.elapsed,2)} 秒）。可尝试提高搜索深度、时间预算或最大子流数量。`);$('run').disabled=false;return;}
-    setStatus('搜索完成，正在仿真热机与稳态过程……');
-    setTimeout(()=>{
-     try{
-      const sim=simulateFull(result.best,p);
-      chartData={...sim,capacity:p.capacity,margin:p.margin,L:result.best.L,config:result.best,p};
-      view={xMin:0,xMax:sim.totalTime,yMin:-p.capacity*.05,yMax:p.capacity*1.08};
-      showResults(result.best,p,result.elapsed,sim);draw();drawSplitterDiagram(result.best);
-      setStatus(`计算完成：已检查 ${result.candidates.length} 个可行候选。热机段 ${fmt(sim.steadyStart,1)}s，之后进入稳态。`);
-     }catch(e){console.error(e);setStatus('仿真出错：'+e.message);}
-     finally{$('run').disabled=false;}
-    },30);
-   }catch(e){console.error(e);setStatus('计算出错：'+e.message);$('run').disabled=false;}
-  },30);
- }catch(e){setStatus(e.message);$('run').disabled=false;}
-}
-
-// ==================== 电量图绘制 ====================
-function draw(){
- const svg=$('chart'),w=1000,h=420,left=68,right=20,top=18,bottom=43,pw=w-left-right,ph=h-top-bottom;
- svg.innerHTML='';
- const NS='http://www.w3.org/2000/svg';
- const el=(tag,attrs={},txt='')=>{const n=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>n.setAttribute(k,v));if(txt)n.textContent=txt;return n;};
- const add=(tag,attrs,txt)=>{const n=el(tag,attrs,txt);svg.appendChild(n);return n;};
- add('rect',{x:0,y:0,width:w,height:h,fill:'#fff'});
- if(!chartData||!view){add('text',{x:25,y:38,fill:'#667085','font-size':15},'运行搜索后显示含热机段的电量曲线');return;}
- const x0=view.xMin,x1=view.xMax,y0=view.yMin,y1=view.yMax;
- const X=x=>left+(x-x0)/(x1-x0)*pw,Y=y=>top+(y1-y)/(y1-y0)*ph;
- const clipId='plotClip';const defs=el('defs');const cp=el('clipPath',{id:clipId});cp.appendChild(el('rect',{x:left,y:top,width:pw,height:ph}));defs.appendChild(cp);svg.appendChild(defs);
- add('text',{x:left,y:12,fill:'#475467','font-size':12},'后备电量');
- for(let i=0;i<=5;i++){
-  const y=top+ph*i/5,val=y1-(y1-y0)*i/5;
-  add('line',{x1:left,y1:y,x2:w-right,y2:y,stroke:'#e9eef5'});
-  add('text',{x:left-8,y:y+4,'text-anchor':'end',fill:'#667085','font-size':11},fmt(val,0));
- }
- const span=x1-x0,step=niceStep(span/6),firstTick=Math.ceil(x0/step)*step;
- for(let x=firstTick;x<=x1+1e-8;x+=step){
-  const xx=X(x);add('line',{x1:xx,y1:top,x2:xx,y2:top+ph,stroke:'#e9eef5'});
-  add('text',{x:xx,y:top+ph+19,'text-anchor':'middle',fill:'#667085','font-size':11},fmt(x,1));
- }
- add('text',{x:left+pw/2,y:h-8,'text-anchor':'middle',fill:'#475467','font-size':12},'时间（秒）');
- const hline=(v,color,dash)=>{const yy=Y(v);if(yy>=top&&yy<=top+ph)add('line',{x1:left,y1:yy,x2:left+pw,y2:yy,stroke:color,'stroke-dasharray':dash||''});};
- hline(chartData.capacity,'#dc4c4c','6 4');hline(chartData.margin,'#e58a12','2 4');hline(0,'#98a2b3','3 4');
-
- const g=el('g',{'clip-path':`url(#${clipId})`});svg.appendChild(g);
- const ct=chartData.times,ce=chartData.energy,L=chartData.L;
-
- const path=[];
- let started=false;
- for(let i=0;i<ct.length;i++){
-  const t=ct[i];
-  if(t<x0-1e-8) continue;
-  if(t>x1+1e-8){
-   if(i>0){
-    const tp=ct[i-1],tq=ct[i];
-    if(tq>tp+1e-12){
-     const r=(x1-tp)/(tq-tp);
-     const yv=ce[i-1]+r*(ce[i]-ce[i-1]);
-     path.push('L'+X(x1).toFixed(2)+','+Y(yv).toFixed(2));
-    }
-   }
-   break;
-  }
-  if(!started){
-   if(i>0&&ct[i-1]<x0){
-    const tp=ct[i-1],tq=ct[i];
-    if(tq>tp+1e-12){
-     const r=(x0-tp)/(tq-tp);
-     const yv=ce[i-1]+r*(ce[i]-ce[i-1]);
-     path.push('M'+X(x0).toFixed(2)+','+Y(yv).toFixed(2));
-    }
-   } else {
-    path.push('M'+X(t).toFixed(2)+','+Y(ce[i]).toFixed(2));
-   }
-   started=true;
-  }
-  path.push('L'+X(t).toFixed(2)+','+Y(ce[i]).toFixed(2));
- }
- if(path.length){
-  g.appendChild(el('path',{
-   d:path.join(' '),fill:'none',stroke:'#2563eb','stroke-width':1.6,
-   'stroke-linejoin':'round'
-  }));
- }
-
- if(L>1){
-  const n0=Math.ceil(x0/L),n1=Math.floor(x1/L);
-  const count=n1-n0+1;
-  const stride=Math.max(1,Math.ceil(count/60));
-  for(let n=n0;n<=n1;n+=stride){
-   const xx=X(n*L);
-   g.appendChild(el('line',{x1:xx,y1:top,x2:xx,y2:top+ph,stroke:'#0f9d78','stroke-dasharray':'5 4','stroke-width':1}));
-  }
- }
-
- if(chartData.steadyStart>0){
-  const wx=X(chartData.steadyStart);
-  if(wx>=left&&wx<=left+pw){
-   g.appendChild(el('line',{x1:wx,y1:top,x2:wx,y2:top+ph,stroke:'#a855f7','stroke-dasharray':'8 4','stroke-width':2}));
-   const labelW=110;
-   const tx=Math.min(Math.max(left+4,wx+6),w-right-labelW-4);
-   add('rect',{x:tx,y:top+4,width:labelW,height:20,rx:4,fill:'#a855f7'});
-   add('text',{x:tx+labelW/2,y:top+18,'text-anchor':'middle',fill:'#fff','font-size':11,'font-weight':700},'热机结束 → 稳态');
-  }
- }
-
- if(drag&&drag.shift){
-  const xx=Math.min(drag.startX,drag.curX),ww=Math.abs(drag.curX-drag.startX);
-  add('rect',{x:xx,y:top,width:ww,height:ph,fill:'#2563eb','fill-opacity':'.10',stroke:'#2563eb','stroke-dasharray':'4 3'});
- }
-
- if(hover&&hover.x>=x0&&hover.x<=x1){
-  const xx=X(hover.x),v=valueAt(hover.x),yy=Y(v);
-  add('line',{x1:xx,y1:top,x2:xx,y2:top+ph,stroke:'#667085','stroke-dasharray':'3 3'});
-  add('circle',{cx:xx,cy:yy,r:4,fill:'#2563eb'});
-  const phase = hover.x < chartData.steadyStart ? '热机' : '稳态';
-  const label=`t=${fmt(hover.x,1)}s [${phase}] · 电量=${fmt(v,1)}`;
-  const tx=Math.min(Math.max(left,xx+10),w-right-240),ty=Math.max(top+22,yy-12);
-  add('rect',{x:tx,y:ty-18,width:238,height:25,rx:4,fill:'#172033'});
-  add('text',{x:tx+8,y:ty-2,fill:'#fff','font-size':12},label);
- }
-}
-function valueAt(t){
- const ct=chartData.times,ce=chartData.energy;
- if(!ct.length)return 0;
- if(t<=ct[0])return ce[0];
- if(t>=ct[ct.length-1])return ce[ce.length-1];
- let lo=0,hi=ct.length-1;
- while(lo+1<hi){const m=(lo+hi)>>1;if(ct[m]<=t)lo=m;else hi=m;}
- const dt=ct[hi]-ct[lo];
- if(dt<1e-9)return ce[hi];
- const r=(t-ct[lo])/dt;
- return ce[lo]+r*(ce[hi]-ce[lo]);
-}
-function niceStep(raw){const p=Math.pow(10,Math.floor(Math.log10(Math.max(raw,1e-9))));const n=raw/p;return (n<=1?1:n<=2?2:n<=5?5:10)*p;}
-const chartSvg=$('chart');
-function chartPos(e){const r=chartSvg.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*1000,y:(e.clientY-r.top)/r.height*420};}
-function xAt(px){return view.xMin+(px-68)/(1000-68-20)*(view.xMax-view.xMin);}
-function zoom(factor,anchor=(view.xMin+view.xMax)/2){
- if(!view||!chartData)return;const minSpan=Math.max(.1,chartData.L/1000),maxSpan=1e15;
- const span=Math.max(minSpan,Math.min(maxSpan,(view.xMax-view.xMin)*factor));
- const ratio=(anchor-view.xMin)/(view.xMax-view.xMin);
- view.xMin=anchor-ratio*span;view.xMax=view.xMin+span;draw();
-}
-function fit(){if(!chartData)return;view={xMin:0,xMax:chartData.totalTime,yMin:-chartData.capacity*.05,yMax:chartData.capacity*1.08};draw();}
-function fitWarm(){
- if(!chartData)return;
- const xMax=Math.max(chartData.steadyStart*1.05, chartData.L*2);
- view={xMin:0,xMax:xMax,yMin:-chartData.capacity*.05,yMax:chartData.capacity*1.08};draw();
-}
-function fitSteady(){
- if(!chartData)return;
- const t0=Math.max(0,chartData.steadyStart-chartData.L*0.2);
- const t1=Math.min(chartData.totalTime, chartData.steadyStart+chartData.L*2.5);
- view={xMin:t0,xMax:t1,yMin:-chartData.capacity*.05,yMax:chartData.capacity*1.08};draw();
-}
-let chartPointer=null,chartPointers=new Map(),pinch=null;
-chartSvg.addEventListener('pointerdown',e=>{
- if(!chartData)return;chartSvg.setPointerCapture(e.pointerId);const p=chartPos(e);chartPointers.set(e.pointerId,p);
- if(chartPointers.size===2){const a=[...chartPointers.values()];pinch={dist:Math.max(1,Math.abs(a[0].x-a[1].x)),span:view.xMax-view.xMin,anchor:xAt((a[0].x+a[1].x)/2)};chartPointer=null;return;}
- chartPointer={startX:p.x,lastX:p.x,startMin:view.xMin,startMax:view.xMax,shift:e.shiftKey,moved:false};
-});
-chartSvg.addEventListener('pointermove',e=>{
- if(!chartData)return;const p=chartPos(e);
- if(chartPointers.has(e.pointerId))chartPointers.set(e.pointerId,p);
- if(chartPointers.size===2&&pinch){
-  const a=[...chartPointers.values()],dist=Math.max(1,Math.abs(a[0].x-a[1].x)),mid=(a[0].x+a[1].x)/2;
-  const span=Math.max(.1,pinch.span*pinch.dist/dist),ratio=(mid-68)/(1000-68-20);
-  view.xMin=pinch.anchor-ratio*span;view.xMax=view.xMin+span;draw();return;
- }
- if(chartPointer&&chartPointers.has(e.pointerId)){
-  chartPointer.lastX=p.x;if(Math.abs(p.x-chartPointer.startX)>3)chartPointer.moved=true;
-  if(chartPointer.shift){draw();return;}
-  const dx=(p.x-chartPointer.startX)/(1000-68-20)*(chartPointer.startMax-chartPointer.startMin);
-  view.xMin=chartPointer.startMin-dx;view.xMax=chartPointer.startMax-dx;draw();return;
- }
- hover={x:xAt(p.x)};draw();
-});
-chartSvg.addEventListener('pointerup',e=>{
- if(chartPointer&&chartPointer.shift&&chartPointer.moved){
-  const xa=xAt(Math.min(chartPointer.startX,chartPointer.lastX)),xb=xAt(Math.max(chartPointer.startX,chartPointer.lastX));
-  if(xb-xa>.1){view.xMin=xa;view.xMax=xb;}
- }
- chartPointers.delete(e.pointerId);if(chartPointers.size<2)pinch=null;chartPointer=null;draw();
-});
-chartSvg.addEventListener('pointercancel',e=>{chartPointers.delete(e.pointerId);pinch=null;chartPointer=null;});
-chartSvg.addEventListener('pointerleave',()=>{if(!chartPointer){hover=null;draw();}});
-chartSvg.addEventListener('wheel',e=>{if(!chartData)return;e.preventDefault();const p=chartPos(e);zoom(e.deltaY<0?.8:1.25,xAt(p.x));},{passive:false});
-chartSvg.addEventListener('dblclick',fit);
-$('zoomIn').addEventListener('click',()=>zoom(.7));
-$('zoomOut').addEventListener('click',()=>zoom(1.4));
-$('fit').addEventListener('click',fit);
-$('fitWarm').addEventListener('click',fitWarm);
-$('fitSteady').addEventListener('click',fitSteady);
-
-// ==================== 分流图（三种布局选最优） ====================
-const splitSvg = $('splitDiagram');
-const NS_SVG = 'http://www.w3.org/2000/svg';
-
-function buildTrieFromPaths(items) {
-  const root = { children: new Map(), isEnd: false, div: null, d: null };
-  for (const { path, d } of items) {
-    let node = root;
-    for (const step of path) {
-      if (!node.children.has(step)) {
-        node.children.set(step, { children: new Map(), isEnd: false, div: step, d: null });
-      }
-      node = node.children.get(step);
-    }
-    node.isEnd = true;
-    node.d = d;
-  }
-  return root;
-}
-function countTrieNodes(root) {
-  let n = 0; const stack = [root];
-  while (stack.length) {
-    const node = stack.pop();
-    for (const c of node.children.values()) { n++; stack.push(c); }
-  }
-  return n;
-}
-function toLayoutTree(node) {
-  const out = { _isOutput: false, div: node.div, d: node.d, isEnd: node.isEnd, children: [] };
-  if (node.isEnd) out.children.push({ _isOutput: true, d: node.d, div: null, children: [] });
-  for (const c of node.children.values()) out.children.push(toLayoutTree(c));
-  return out;
-}
-
-// ★ 新增：公共因子方案计数
-function countCommonFactorLayout(components) {
-  if (!components.length) return 0;
-  const minA = Math.min.apply(null, components.map(c => c.ai));
-  const minB = Math.min.apply(null, components.map(c => c.bi));
-  let count = minA + minB;
-  for (const c of components) {
-    count += (c.ai - minA) + (c.bi - minB);
-  }
-  return count;
-}
-
-// ★ 新增：构建公共因子布局树
-function makeCommonFactorLayoutTree(components) {
-  if (!components.length) return { _isOutput: false, div: null, d: null, children: [] };
-  const minA = Math.min.apply(null, components.map(c => c.ai));
-  const minB = Math.min.apply(null, components.map(c => c.bi));
-
-  const root = { _isOutput: false, div: null, d: null, children: [] };
-  let node = root;
-
-  // 主干：先 2 分器后 3 分器
-  for (let i = 0; i < minA; i++) {
-    const child = { _isOutput: false, div: '2', d: null, children: [] };
-    node.children.push(child);
-    node = child;
-  }
-  for (let i = 0; i < minB; i++) {
-    const child = { _isOutput: false, div: '3', d: null, children: [] };
-    node.children.push(child);
-    node = child;
-  }
-
-  // 各支路从主干末尾分叉
-  for (const c of components) {
-    const sufA = c.ai - minA;
-    const sufB = c.bi - minB;
-    if (sufA === 0 && sufB === 0) {
-      node.children.push({ _isOutput: true, d: c.d, div: null, children: [] });
-    } else {
-      const suffixNodes = [];
-      for (let i = 0; i < sufA; i++) {
-        suffixNodes.push({ _isOutput: false, div: '2', d: null, children: [] });
-      }
-      for (let i = 0; i < sufB; i++) {
-        suffixNodes.push({ _isOutput: false, div: '3', d: null, children: [] });
-      }
-      suffixNodes.push({ _isOutput: true, d: c.d, div: null, children: [] });
-      for (let i = 0; i < suffixNodes.length - 1; i++) {
-        suffixNodes[i].children.push(suffixNodes[i + 1]);
-      }
-      node.children.push(suffixNodes[0]);
-    }
-  }
-  return root;
-}
-
-function applySplitTransform() {
-  const g = splitSvg.querySelector('#splitRoot');
-  if (g) g.setAttribute('transform',
-    `translate(${splitState.tx},${splitState.ty}) scale(${splitState.scale})`);
-}
-function splitFit() {
-  if (!splitInit) return;
-  const rect = splitSvg.getBoundingClientRect();
-  const availW = rect.width - 20;
-  const availH = rect.height - 20;
-  const s = Math.min(availW / splitState.baseW, availH / splitState.baseH);
-  splitState.scale = Math.max(0.15, Math.min(3, s));
-  splitState.tx = (rect.width - splitState.baseW * splitState.scale) / 2;
-  splitState.ty = (rect.height - splitState.baseH * splitState.scale) / 2;
-  applySplitTransform();
-}
-function splitReset() {
-  if (!splitInit) return;
-  const rect = splitSvg.getBoundingClientRect();
-  splitState.scale = 1;
-  splitState.tx = (rect.width - splitState.baseW) / 2;
-  splitState.ty = (rect.height - splitState.baseH) / 2;
-  applySplitTransform();
-}
-
-function drawSplitterDiagram(best) {
-  splitSvg.innerHTML = '';
-  const el = (tag, attrs = {}, txt = '') => {
-    const n = document.createElementNS(NS_SVG, tag);
-    Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v));
-    if (txt) n.textContent = txt;
-    return n;
-  };
-  if (!best) {
-    splitInit = false;
-    splitSvg.setAttribute('viewBox', '0 0 800 240');
-    splitSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    const g = el('g');
-    g.appendChild(el('text', { x: 30, y: 50, fill: '#667085', 'font-size': 15 },
-      '计算出方案后，将在此显示各分流支路与热能池的连接关系。'));
-    splitSvg.appendChild(g);
-    return;
-  }
-
-  // 构建三种布局方案，选分流器总数最少的
-  const rawPaths = best.comps.map(c => ({ ai: c.ai, bi: c.bi, d: c.d }));
-  const orderTwoFirst = rawPaths.map(c => {
-    const p = [];
-    for (let i = 0; i < c.ai; i++) p.push('2');
-    for (let i = 0; i < c.bi; i++) p.push('3');
-    return { path: p, d: c.d };
-  });
-  const orderThreeFirst = rawPaths.map(c => {
-    const p = [];
-    for (let i = 0; i < c.bi; i++) p.push('3');
-    for (let i = 0; i < c.ai; i++) p.push('2');
-    return { path: p, d: c.d };
-  });
-  const trieTwo = buildTrieFromPaths(orderTwoFirst);
-  const trieThree = buildTrieFromPaths(orderThreeFirst);
-  const nTwo = countTrieNodes(trieTwo);
-  const nThree = countTrieNodes(trieThree);
-  const nCommon = countCommonFactorLayout(best.comps);
-
-  let layoutRoot, chosenLabel;
-  const minTrie = Math.min(nTwo, nThree);
-  if (nCommon < minTrie) {
-    layoutRoot = makeCommonFactorLayoutTree(best.comps);
-    chosenLabel = `公共因子共享 · ${nCommon} 个分流器`;
-  } else if (nTwo <= nThree) {
-    layoutRoot = toLayoutTree(trieTwo);
-    chosenLabel = `2-在前 Trie · ${nTwo} 个分流器`;
+  let p;
+  try { p = readParams(); } catch(e){ els.status.className='status err'; els.status.textContent = e.message; return; }
+  els.status.className='status'; els.status.textContent='正在枚举 D = 2^a·3^b 与构造数 k，并做 1 秒离散仿真…';
+  els.status.offsetHeight;
+  let res;
+  try { res = Core.computeAll(p); }
+  catch(e){ els.status.className='status err'; els.status.textContent='计算失败：'+e.message; console.error(e); return; }
+  state.res = res; state.params = p;
+  if(!res.best){
+    state.plan = res.plans[0] || null;
+    els.status.className='status err';
+    els.status.textContent = res.plans.length? '找到候选比例，但没有一个能同时满足缓冲与不排队约束，可放宽容量/安全电量或降低 Q。'
+      : '没有可分解的方案：试试调大 t、调小 Q，或把搜索强度改成「深入」。';
   } else {
-    layoutRoot = toLayoutTree(trieThree);
-    chosenLabel = `3-在前 Trie · ${nThree} 个分流器`;
+    els.status.className='status';
+    els.status.textContent = '完成：扫描 '+res.scanned+' 组 (D,k)，候选 '+res.plans.length+' 个，用时 '+res.elapsed.toFixed(2)+' s。';
   }
-
-  const topPad = 76;
-  const rowH = 78;
-  const colW = 76;
-  const nodeW = 52, nodeH = 38;
-  const inputX = 20, inputW = 70;
-  const leftPad = inputX + inputW + 60;
-
-  let leafCursor = 0;
-  function place(node, depth) {
-    if (node._isOutput) {
-      node._y = topPad + (leafCursor + 0.5) * rowH;
-      leafCursor++;
-      return;
-    }
-    node._x = leftPad + depth * colW;
-    if (node.children.length === 0) {
-      node._y = topPad + (leafCursor + 0.5) * rowH;
-      leafCursor++;
-      return;
-    }
-    const ys = [];
-    for (const c of node.children) {
-      place(c, depth + 1);
-      ys.push(c._y);
-    }
-    node._y = (ys[0] + ys[ys.length - 1]) / 2;
-  }
-  place(layoutRoot, 0);
-
-  function assignOutputX(node) {
-    for (const c of node.children) {
-      if (c._isOutput) c._x = node._x + nodeW / 2 + 60;
-      else assignOutputX(c);
-    }
-  }
-  assignOutputX(layoutRoot);
-
-  let maxX = 0, maxY = 0;
-  function scan(node) {
-    if (node._x !== undefined) maxX = Math.max(maxX, node._x + nodeW + 200);
-    maxY = Math.max(maxY, node._y + nodeH);
-    for (const c of node.children) scan(c);
-  }
-  scan(layoutRoot);
-  const baseW = Math.max(400, maxX + 40);
-  const baseH = Math.max(240, maxY + 40);
-
-  splitState.baseW = baseW;
-  splitState.baseH = baseH;
-  splitInit = true;
-
-  splitSvg.setAttribute('viewBox', null);
-  splitSvg.setAttribute('preserveAspectRatio', null);
-  const rect = splitSvg.getBoundingClientRect();
-  const fitScale = Math.min((rect.width - 20) / baseW, (rect.height - 20) / baseH);
-  splitState.scale = Math.max(0.15, Math.min(1, fitScale));
-  splitState.tx = (rect.width - baseW * splitState.scale) / 2;
-  splitState.ty = (rect.height - baseH * splitState.scale) / 2;
-
-  const g = el('g', { id: 'splitRoot' });
-  splitSvg.appendChild(g);
-  g.appendChild(el('rect', { x: -100, y: -100, width: baseW + 200, height: baseH + 200, fill: '#fff' }));
-
-  const defs = el('defs');
-  const marker = el('marker', { id: 'arrowHead', markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto' });
-  marker.appendChild(el('path', { d: 'M0,0 L6,3 L0,6 Z', fill: '#64748b' }));
-  defs.appendChild(marker);
-  g.appendChild(defs);
-
-  g.appendChild(el('text', { x: 20, y: 26, fill: '#344054', 'font-size': 14, 'font-weight': 700 },
-    `等效比例 f = ${best.expStr} = 各支路比例之和  [${chosenLabel}]`));
-
-  const rootY = layoutRoot._y;
-  g.appendChild(el('rect', { x: inputX, y: rootY - nodeH / 2, width: inputW, height: nodeH, rx: 8, fill: '#e3f2fd', stroke: '#1976d2', 'stroke-width': 2 }));
-  g.appendChild(el('text', { x: inputX + inputW / 2, y: rootY + 5, 'text-anchor': 'middle', fill: '#0d47a1', 'font-size': 13, 'font-weight': 700 }, '输入'));
-
-  function drawEdge(x1, y1, x2, y2, color) {
-    color = color || '#64748b';
-    if (Math.abs(y1 - y2) < 1) {
-      g.appendChild(el('line', { x1, y1, x2, y2, stroke: color, 'stroke-width': 2, 'marker-end': 'url(#arrowHead)' }));
-    } else {
-      const mx = (x1 + x2) / 2;
-      g.appendChild(el('path', {
-        d: `M${x1},${y1} L${mx},${y1} L${mx},${y2} L${x2},${y2}`,
-        fill: 'none', stroke: color, 'stroke-width': 2, 'marker-end': 'url(#arrowHead)'
-      }));
-    }
-  }
-
-  for (const c of layoutRoot.children) {
-    if (c._isOutput) continue;
-    drawEdge(inputX + inputW, rootY, c._x - nodeW / 2, c._y);
-  }
-
-  function drawNode(node, isRoot) {
-    if (node._isOutput) {
-      const text = `1/${node.d}`;
-      const textW = Math.max(58, text.length * 9 + 22);
-      g.appendChild(el('rect', { x: node._x, y: node._y - nodeH / 2, width: textW, height: nodeH, rx: 8, fill: '#fff7e6', stroke: '#e58a12', 'stroke-width': 1.8 }));
-      g.appendChild(el('text', { x: node._x + textW / 2, y: node._y + 6, 'text-anchor': 'middle', fill: '#92400e', 'font-size': 13, 'font-weight': 700 }, text));
-      return;
-    }
-    if (!isRoot && node.div) {
-      const isTwo = node.div === '2';
-      g.appendChild(el('rect', { x: node._x - nodeW / 2, y: node._y - nodeH / 2, width: nodeW, height: nodeH, rx: 8, fill: isTwo ? '#e8f0ff' : '#e7f8f1', stroke: isTwo ? '#2563eb' : '#0f9d78', 'stroke-width': 1.8 }));
-      g.appendChild(el('text', { x: node._x, y: node._y + 6, 'text-anchor': 'middle', fill: '#172033', 'font-size': 15, 'font-weight': 700 }, node.div));
-      const x1 = node._x + nodeW / 2, y1 = node._y;
-      for (const c of node.children) {
-        if (c._isOutput) drawEdge(x1, y1, c._x, c._y, '#e58a12');
-        else drawEdge(x1, y1, c._x - nodeW / 2, c._y, '#64748b');
-        drawNode(c, false);
-      }
-    } else {
-      for (const c of node.children) drawNode(c, false);
-    }
-  }
-  drawNode(layoutRoot, true);
-  applySplitTransform();
+  state.plan = res.best || state.plan;
+  setView(res.best && res.best.sim.horizon > 3000 ? 'steady2' : 'all');
+  renderAll();
 }
 
-splitSvg.addEventListener('pointerdown', e => {
-  if (!splitInit) return;
-  splitSvg.setPointerCapture(e.pointerId);
-  splitPointer = { x: e.clientX, y: e.clientY, tx0: splitState.tx, ty0: splitState.ty };
-});
-splitSvg.addEventListener('pointermove', e => {
-  if (!splitPointer) return;
-  splitState.tx = splitPointer.tx0 + (e.clientX - splitPointer.x);
-  splitState.ty = splitPointer.ty0 + (e.clientY - splitPointer.y);
-  applySplitTransform();
-});
-splitSvg.addEventListener('pointerup', e => {
-  try { splitSvg.releasePointerCapture(e.pointerId); } catch (err) {}
-  splitPointer = null;
-});
-splitSvg.addEventListener('pointercancel', () => { splitPointer = null; });
-splitSvg.addEventListener('wheel', e => {
-  if (!splitInit) return;
-  e.preventDefault();
-  const rect = splitSvg.getBoundingClientRect();
-  const px = e.clientX - rect.left, py = e.clientY - rect.top;
-  const cx = (px - splitState.tx) / splitState.scale;
-  const cy = (py - splitState.ty) / splitState.scale;
-  const factor = e.deltaY < 0 ? 0.85 : 1.18;
-  splitState.scale = Math.max(0.05, Math.min(8, splitState.scale * factor));
-  splitState.tx = px - cx * splitState.scale;
-  splitState.ty = py - cy * splitState.scale;
-  applySplitTransform();
-}, { passive: false });
-splitSvg.addEventListener('dblclick', splitFit);
+function setView(mode){
+  const p = state.plan; if(!p||!p.sim) return;
+  const sim = p.sim, L = sim.L, H = sim.horizon;
+  if(mode==='all') state.view = {x0:0, x1:H};
+  else if(mode==='steady2') state.view = {x0:Math.max(0,H-2*L), x1:H};
+  else if(mode==='steady') state.view = {x0:Math.max(0,H-L), x1:H};
+  else if(mode==='rise') state.view = {x0:0, x1:Math.min(H, Math.max(L*2, (sim.saturatedAt>0? sim.saturatedAt*1.3 : L*2)))};
+  else if(mode==='in') state.view = zoomView(state.view,0.6);
+  else if(mode==='out') state.view = zoomView(state.view,1/0.6);
+  else return;
+  clampView(); drawChart();
+}
+function zoomView(v,f){
+  const c=(v.x0+v.x1)/2, span=(v.x1-v.x0)*f;
+  return {x0:c-span/2, x1:c+span/2};
+}
+function clampView(){
+  const p=state.plan; if(!p||!p.sim) return;
+  const H=p.sim.horizon; let {x0,x1}=state.view;
+  let span=Math.max(4,Math.min(H,x1-x0));
+  if(x0<0){ x0=0; x1=span; }
+  if(x1>H){ x1=H; x0=Math.max(0,H-span); }
+  state.view={x0,x1};
+}
 
-$('diagramZoomIn').addEventListener('click', () => {
-  if (!splitInit) return;
-  const rect = splitSvg.getBoundingClientRect();
-  const px = rect.width / 2, py = rect.height / 2;
-  const cx = (px - splitState.tx) / splitState.scale;
-  const cy = (py - splitState.ty) / splitState.scale;
-  splitState.scale = Math.min(8, splitState.scale * 1.25);
-  splitState.tx = px - cx * splitState.scale;
-  splitState.ty = py - cy * splitState.scale;
-  applySplitTransform();
-});
-$('diagramZoomOut').addEventListener('click', () => {
-  if (!splitInit) return;
-  const rect = splitSvg.getBoundingClientRect();
-  const px = rect.width / 2, py = rect.height / 2;
-  const cx = (px - splitState.tx) / splitState.scale;
-  const cy = (py - splitState.ty) / splitState.scale;
-  splitState.scale = Math.max(0.05, splitState.scale / 1.25);
-  splitState.tx = px - cx * splitState.scale;
-  splitState.ty = py - cy * splitState.scale;
-  applySplitTransform();
-});
-$('diagramFit').addEventListener('click', splitFit);
-$('diagramReset').addEventListener('click', splitReset);
+function renderAll(){
+  const p=state.plan;
+  if(!p||!p.sim){
+    els.verdict.innerHTML='<div class="title">没有可行方案</div><div class="sub">放宽容量 / 安全电量，或调大 t、调小 Q 后再试。</div>';
+    els.metrics.innerHTML=''; els.formula.innerHTML=''; els.planTable.innerHTML=''; els.planNote.textContent=''; els.simnote.textContent='';
+    els.net.innerHTML='<div style="padding:18px;color:var(--dim)">暂无接法</div>';
+    renderCandidates(); renderWhy(); drawChart(); return;
+  }
+  renderVerdict(); renderMetrics(); renderFormula(); renderNetwork(); renderPlan(); renderCandidates(); renderWhy(); simNote(); drawChart();
+}
 
-// ==================== 主入口事件 ====================
-$('resetInputs').addEventListener('click',()=>{$('t').value=2;$('Q').value=675;$('A').value=3230;$('capacity').value=100000;$('margin').value=500;$('depth').value='standard';$('maxSub').value=5;$('budget').value=5;setStatus('已恢复默认参数。');});
+function renderVerdict(){
+  const p=state.plan; if(!p){ els.verdict.innerHTML='<div class="title">无可行方案</div>'; return; }
+  const R=state.res, C=R.C;
+  const dsTxt = p.groups.map(g=>g.d+(g.count>1?'×'+g.count:'')).join(' + ');
+  const title = (p.n===1? '单支路' : p.n+' 条支路并联')+'：d = <b>'+dsTxt+'</b>';
+  const Tmin = Math.min(...p.branches.map(b=>b.T)), Tmax = Math.max(...p.branches.map(b=>b.T));
+  const rhythm = p.groups.map(g=>fmt(g.T,0)+' s'+(g.count>1?' ×'+g.count:'')).join(' ／ ');
+  const sub = p.n===1
+    ? '分流倍数 '+pow2s(p.groups[0].x2,p.groups[0].x3)+'，每 '+fmt(Tmin,0)+' s 投放一块电池，燃烧 40 s 后进入空闲。'
+    : '投电池节奏：'+rhythm+'（相位按整数秒自动错开）；等效减速倍数 1/f = '+fmt(p.dEff,3)+'。';
+  els.verdict.innerHTML =
+    (R.best? '' : '<div class="sub" style="color:var(--bad-fg);margin:0 0 8px">⚠ 没有同时满足全部约束的方案：下面显示的是精度最高、但<b>不合格</b>的候选（红色指标即不合格原因）。可放宽容量 / 安全电量，或调整 Q、A、t。</div>')+
+    '<div class="title">'+(R.best?'':'（不合格候选）')+title+'</div>'+
+    '<div class="sub">'+sub+'</div>'+
+    '<div class="chips">'+
+      '<span class="chip">C = '+fmt(C,4)+'</span>'+
+      '<span class="chip hl">1/f = D/k = '+p.D+'/'+p.k+' = '+fmt(p.dEff,4)+'</span>'+
+      '<span class="chip '+(p.precision>0.99?'ok':(p.precision>0.8?'warn':''))+'">供电精度 '+(p.precision*100).toFixed(2)+'%</span>'+
+      '<span class="chip '+(p.sim.steady.min>=state.params.margin?'ok':'bad')+'">稳态最低电量 '+fmt(p.sim.steady.min,0)+'</span>'+
+      '<span class="chip">分器 '+p.sharedCost+' 个'+(p.sharedCost<p.complexity? '（共用省 '+(p.complexity-p.sharedCost)+' 个）':'')+'</span>'+
+    '</div>';
+}
+function renderMetrics(){
+  const p=state.plan, R=state.res; if(!p||!R) return;
+  const pms=state.params, sim=p.sim, C=R.C;
+  const cards=[
+    ['阈值 C = 40A/(tQ)', fmt(C,4), '减速倍数上限'],
+    ['有效减速倍数 1/f', fmt(p.dEff,4), 'D/k = '+p.D+'/'+p.k],
+    ['供电精度', (p.precision*100).toFixed(2)+'%', '1/f ÷ C，越接近 100% 越省'],
+    ['支路数 / 分器数', p.n+' / '+p.sharedCost, p.sharedCost<p.complexity? '共用前缀省下 '+(p.complexity-p.sharedCost)+' 个':'串联合计 '+p.complexity+' 个'],
+    ['稳态最低电量', fmt(sim.steady.min,0), '安全线 '+fmt(pms.margin,0)],
+    ['稳态最高电量', fmt(sim.steady.max,0), '容量 '+fmt(pms.capacity,0)],
+    ['最小到达间隔', fmt(p.minGap,1)+' s', '小于 40 s 就会短暂排队'],
+    ['最长排队等待', fmt(sim.maxWait,0)+' s', '排队 '+sim.waitedArrivals+' 次'],
+    ['平均供给 / 需求', fmt(sim.steady.supplyRatio,4), '1.0000 = 刚好补平'],
+    ['公共周期 L', mmss(p.L), 'lcm(d_i)·t = '+p.D+'·t'],
+    ['仿真步长 / 时长', '1 s / '+mmss(sim.horizon), '共 '+fmt(sim.horizon,0)+' tick，6 个周期'],
+    ['充满时刻', sim.saturatedAt>0? mmss(sim.saturatedAt) : (sim.saturatedAt===0? '起点即满' : '未充满'), 'E 首次达到容量'],
+  ];
+  els.metrics.innerHTML = cards.map(c=>
+    '<div class="metric"><div class="k">'+c[0]+'</div><div class="v">'+c[1]+'</div><div class="n">'+c[2]+'</div></div>').join('');
+}
+function renderFormula(){
+  const p=state.plan, R=state.res; if(!p||!R) return;
+  const pms=state.params, C=R.C;
+  const sumTxt = p.branches.map(b=>frac(1,b.d)).join(' + ');
+  const rows=[];
+  rows.push('<div class="ln"><span class="cm">① 阈值  </span>C = '+frac('40A','tQ')+' = '+frac('40×'+fmt(pms.A,0),fmt(pms.t,0)+'×'+fmt(pms.Q,0))+' = <span class="hl">'+fmt(C,4)+'</span></div>');
+  rows.push('<div class="ln"><span class="cm">② 送达率 </span>Σ '+frac(1,'d<sub>i</sub>')+' = '+sumTxt+' = '+frac(p.k,p.D)+' = '+fmt(p.ratio,6)+'</div>');
+  rows.push('<div class="ln"><span class="cm">③ 减速倍数</span>1/f = 1 ⁄ Σ(1/d<sub>i</sub>) = D ⁄ k = '+p.D+' ⁄ '+p.k+' = <span class="hl">'+fmt(p.dEff,4)+'</span> <span class="ok">≤ C = '+fmt(C,4)+' ✓</span></div>');
+  rows.push('<div class="ln"><span class="cm">④ 逐支路 </span>'+p.branches.map((b,i)=>'d'+(i+1)+' = '+pow2s(b.x2,b.x3)+' = '+b.d+'（T = '+fmt(b.T,0)+' s）').join('，')+'</div>');
+  rows.push('<div class="ln"><span class="cm">⑤ 判据  </span>1/f = '+fmt(p.dEff,4)+' ≤ C，供电精度 = '+fmt(p.dEff,4)+' ⁄ '+fmt(C,4)+' = <span class="hl">'+(p.precision*100).toFixed(2)+'%</span>，多出的 '+((1-p.precision)*100).toFixed(2)+'% 只能溢出</div>');
+  els.formula.innerHTML = rows.join('');
+}
+function renderPlan(){
+  const p=state.plan, pms=state.params; if(!p) return;
+  let h='<thead><tr><th>支路</th><th>分流链</th><th class="mono">d = 2^x·3^y</th><th class="mono">输出周期 T</th>'
+      +'<th class="mono">每分钟到达</th><th class="mono">占比 1/d</th><th class="mono">相位</th><th class="mono">到达时刻（前 6 拍）</th></tr></thead><tbody>';
+  p.groups.forEach((g,gi)=>{
+    const arr = [];
+    g.idx.forEach(bi=>{
+      const list = p.sim.perBranch[bi] || [];
+      for(const s of list){ arr.push(s); if(arr.length>40) break; }
+    });
+    arr.sort((a,b)=>a-b);
+    const head = arr.slice(0,6).map(s=>fmt(s,0)).join(', ');
+    h+='<tr><td>#'+(gi+1)+(g.count>1?'（×'+g.count+' 条同规格）':'')+'</td>'
+      +'<td>'+chainHTML(g.x2,g.x3)+'</td>'
+      +'<td class="mono">'+pow2s(g.x2,g.x3)+' = '+g.d+'</td>'
+      +'<td class="mono">'+fmt(g.T,0)+' s</td>'
+      +'<td class="mono">'+fmt(60/g.T,3)+'</td>'
+      +'<td class="mono">'+fmt(1/g.d,6)+'</td>'
+      +'<td class="mono">'+g.idx.map(bi=>p.phases[bi]).join(', ')+'</td>'
+      +'<td class="mono">'+head+' …</td></tr>';
+  });
+  h+='</tbody>';
+  els.planTable.innerHTML = h;
+  const Tlist = p.branches.map(b=>b.T);
+  els.planNote.innerHTML = '合计：<b>Σ1/d<sub>i</sub> = '+p.k+'/'+p.D+'</b>（送达率 '+fmt(p.ratio,6)+'），'
+    +'公共周期 L = t·lcm(d<sub>i</sub>) = '+p.D+'·'+fmt(pms.t,0)+' = '+fmt(p.L,0)+' s，'
+    +'输出周期范围 '+fmt(Math.min(...Tlist),0)+' ~ '+fmt(Math.max(...Tlist),0)+' s。'
+    +'分器合计 <b>'+p.sharedCost+'</b> 个（各支路各串一条是 '+p.complexity+' 个，'
+    +(p.sharedCost<p.complexity? '共用前缀省下 '+(p.complexity-p.sharedCost)+' 个' : '本方案没有可共用的前缀')+'）；'
+    +'相位列是各支路首块电池的投入时刻（自动错开）。';
+  const bs = state.res && state.res.bestSingle;
+  if(bs && bs!==p) els.planNote.innerHTML += ' <b>单线对照：</b>只走一条线最好只能做到 d = '+bs.groups[0].d
+    +'（精度 '+(bs.precision*100).toFixed(1)+'%），多线并联把它抬到了 '+(p.precision*100).toFixed(1)+'%。';
+  else if(bs && bs===p) els.planNote.innerHTML += ' <b>这条就是单线能达到的最好结果。</b>';
+}
+function renderCandidates(){
+  const R=state.res; if(!R||!R.plans) return;
+  const list=[R.best, ...(R.alternatives||[])].filter(Boolean);
+  const num=(pl,f)=>pl.stat? fmt(f(pl.stat),0) : '—';
+  let h='<thead><tr><th>方案</th><th class="mono">精度</th><th class="mono">1/f = D/k</th><th class="mono">支路</th>'
+      +'<th class="mono">分器(共用后)</th><th class="mono">稳态最低</th><th class="mono">最长排队</th><th class="mono">公共周期</th></tr></thead><tbody>';
+  if(!list.length) h+='<tr><td colspan="8" style="text-align:left;color:var(--dim)">没有通过约束的方案</td></tr>';
+  list.forEach((pl,i)=>{
+    h+='<tr class="pick'+(pl===state.plan?' active':'')+'" data-i="'+i+'">'
+      +'<td>'+(i===0?'★ 推荐 ':'备选 '+i+' ')+'<span class="mono">'+planLabel(pl)+'</span></td>'
+      +'<td class="mono">'+(pl.precision*100).toFixed(2)+'%</td>'
+      +'<td class="mono">'+fmt(pl.dEff,3)+' = '+pl.D+'/'+pl.k+'</td>'
+      +'<td class="mono">'+pl.n+'</td>'
+      +'<td class="mono">'+pl.sharedCost+(pl.sharedCost<pl.complexity? ' <span style="color:var(--ok-fg)">(省'+(pl.complexity-pl.sharedCost)+')</span>':'')+'</td>'
+      +'<td class="mono">'+num(pl,s=>s.min)+'</td>'
+      +'<td class="mono">'+(pl.stat? fmt(pl.stat.maxWait,0)+' s' : '—')+'</td>'
+      +'<td class="mono">'+fmt(pl.L,0)+' s</td></tr>';
+  });
+  els.candTable.innerHTML = h+'</tbody>';
+  els.candTable.querySelectorAll('tr.pick').forEach(tr=>{
+    tr.addEventListener('click',()=>{
+      const pl=list[+tr.dataset.i];
+      if(!pl) return;
+      if(!pl.sim) pl.sim = Core.simulate(pl, state.params);
+      state.plan=pl; state.view={x0:0,x1:pl.sim.horizon}; clampView();
+      renderAll();
+    });
+  });
+  const total=R.plans.length;
+  els.candNote.innerHTML = '本次共枚举出 '+total+' 个可分解方案，按供电精度降序逐个做 1 秒离散仿真，'
+    +'上表是<b>不被更优方案全面压制</b>的前 '+list.length+' 个（精度、分器数、稳态余量各有所长，点一行看它的曲线与接法）。'
+    +(R.truncated? ' <b>搜索达到时间预算，结果可能不是全局最优。</b>':'');
+}
+function renderWhy(){
+  const R=state.res; if(!R) return;
+  const list = R.whyNot||[];
+  if(!list.length){ els.whyCard.style.display='none'; return; }
+  els.whyCard.style.display='';
+  els.whyNot.innerHTML = list.map(pl=>
+    '<li>精度更高的方案 <b>'+planLabel(pl)+'</b>（1/f = '+fmt(pl.dEff,3)+'，公共周期 '+fmt(pl.L,0)+' s）被淘汰：'+(pl.note||'不满足约束')+'。</li>').join('');
+}
+function simNote(){
+  const p=state.plan, pms=state.params; if(!p) return;
+  const sim=p.sim;
+  els.simnote.innerHTML = '仿真时长 '+fmt(sim.horizon,0)+' 秒（= 6 个公共周期 L = '+fmt(p.L,0)+' s，共 '+fmt(sim.horizon,0)+' 个 1 秒结算点），'
+    +'最后 1 个周期作为稳态窗口。稳态段：燃烧 '+sim.steady.burnTicks+' 秒 → 平均供给 '+fmt(sim.steady.avgSupply,1)
+    +' 单位/秒（需求 '+fmt(pms.Q,0)+'），溢出 '+fmt(sim.steady.overflow,0)+' 单位，断电 '+sim.steady.blackout+' 秒。'
+    +(sim.waitedArrivals? ' 有 '+sim.waitedArrivals+' 次到达需要排队，最长等 '+fmt(sim.maxWait,0)+' s（≤ 40 s 属于可接受的短暂错位）。'
+                        : ' 全程没有电池排队。');
+}
+
+/* ---------------- 渲染：支持多根独立树的 SVG 渲染逻辑 ---------------- */
+function netSVG(p){
+  const P=PAL();
+  const net=p.net; if(!net || !net.roots) return {svg:'',w:0,h:0};
+  const DX=96, DY=72, NW=46, NH=38, OW=198, OH=50, PADL=22, PADT=30, ROOTW=92, HEADGAP=64;
+  
+  let globalRowCursor = 0;
+  const rootDisps = [];
+
+  for (const rNode of net.roots) {
+    let treeRowStart = globalRowCursor;
+    function build(n){
+      const kids=[];
+      for(const c of n.ch.values()) kids.push(build(c));
+      for(const gi of n.terms) kids.push({src:null, gi, kids:[]});
+      return {src:n, kids};
+    }
+    const disp = build(rNode);
+    (function place(d){
+      if(!d.kids.length){ d.row = globalRowCursor++; return; }
+      d.kids.forEach(place);
+      d.row = (d.kids[0].row + d.kids[d.kids.length-1].row)/2;
+    })(disp);
+    rootDisps.push({ disp, rowStart: treeRowStart, rowEnd: globalRowCursor });
+  }
+
+  let maxDep=0;
+  for (const rd of rootDisps) {
+    (function scan(d,dep){
+      d.dep=dep; maxDep=Math.max(maxDep,dep); d.kids.forEach(k=>scan(k,dep+1));
+    })(rd.disp, 0);
+  }
+
+  for (const rd of rootDisps) {
+    (function layout(d){
+      const isOut=!d.src, isRoot=d.src&&d.src.type==='root';
+      d.w = isOut? OW : (isRoot? ROOTW : NW);
+      d.h = isOut? OH : NH;
+      d.x = PADL + HEADGAP + d.dep*DX + (d.dep>0?HEADGAP:0);
+      d.y = PADT + d.row*DY;
+      d.kids.forEach(layout);
+    })(rd.disp);
+  }
+
+  const totalRows = globalRowCursor;
+  const rootX = PADL;
+  const rootY = PADT + ((totalRows - 1) * DY) / 2;
+
+  const W = PADL + HEADGAP*2 + (maxDep+1)*DX + OW + 26;
+  const H = PADT + totalRows * DY + 4;
+
+  const o = [];
+  o.push('<svg viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,Consolas,Menlo,monospace">');
+  o.push('<defs>'
+    + '<marker id="ahA" markerWidth="10" markerHeight="10" refX="8.2" refY="3" orient="auto"><path d="M0,0 L8.5,3 L0,6 z" fill="'+P.svArrow+'"/></marker>'
+    + '<marker id="ahB" markerWidth="10" markerHeight="10" refX="8.2" refY="3" orient="auto"><path d="M0,0 L8.5,3 L0,6 z" fill="'+P.svAmber+'"/></marker>'
+    + '</defs>');
+
+  o.push('<rect x="'+rootX+'" y="'+(rootY-NH/2)+'" width="'+ROOTW+'" height="'+NH+'" rx="9" fill="'+P.svRootFill+'" stroke="'+P.svRootStroke+'" stroke-width="1.2"/>');
+  o.push('<text x="'+(rootX+ROOTW/2)+'" y="'+(rootY-2)+'" fill="'+P.svRootFg+'" font-size="12.5" text-anchor="middle">电池输入</text>');
+  o.push('<text x="'+(rootX+ROOTW/2)+'" y="'+(rootY+13)+'" fill="'+P.svRootSub+'" font-size="11" text-anchor="middle">每 '+fmt(state.params.t,0)+' s 一块</text>');
+
+  for (const rd of rootDisps) {
+    const d = rd.disp;
+    const x1 = rootX + ROOTW, y1 = rootY;
+    const x2 = d.x - 2, y2 = d.y;
+    const mid = (x1 + x2) / 2;
+    o.push('<path d="M'+x1.toFixed(1)+' '+y1+' H'+mid.toFixed(1)+' V'+y2+' H'+x2.toFixed(1)
+      +'" fill="none" stroke="'+P.svEdge+'" stroke-width="1.3" marker-end="url(#ahA)"/>');
+  }
+
+  for (const rd of rootDisps) {
+    const disp = rd.disp;
+    (function edges(d){
+      d.kids.forEach(k=>{
+        const shared = !!(d.src && d.src.shared);
+        const x1=d.x+d.w, y1=d.y, x2=k.x-2, y2=k.y, mid=(x1+x2)/2;
+        o.push('<path d="M'+x1.toFixed(1)+' '+y1+' H'+mid.toFixed(1)+' V'+y2+' H'+x2.toFixed(1)
+          +'" fill="none" stroke="'+(shared?P.svEdgeShared:P.svEdge)+'" stroke-width="'+(shared?1.6:1.3)
+          +'" marker-end="url(#'+(shared?'ahB':'ahA')+')"/>');
+        edges(k);
+      });
+    })(disp);
+
+    (function nodes(d){
+      const isOut=!d.src, isRoot=d.src&&d.src.type==='root';
+      if(isOut){
+        const g=p.groups[d.gi];
+        const ph=(g.idx||[]).map(i=>p.phases? p.phases[i] : 0).join(', ');
+        o.push('<rect x="'+d.x+'" y="'+(d.y-OH/2)+'" width="'+OW+'" height="'+OH+'" rx="9" fill="'+P.svOutFill+'" stroke="'+P.svAmber+'" stroke-width="1.1"/>');
+        o.push('<text x="'+(d.x+11)+'" y="'+(d.y-7)+'" fill="'+P.svOutFg+'" font-size="12.5">输出 #'+(d.gi+1)+(g.count>1?' ×'+g.count:'')
+          +' 份额 1/'+g.d+'</text>');
+        o.push('<text x="'+(d.x+11)+'" y="'+(d.y+11)+'" fill="'+P.svOutSub+'" font-size="11.5">每 '+fmt(g.T,0)+' s 一块 相位 '+ph+'</text>');
+      } else if(isRoot){
+        const isTwo=d.src.type==='2';
+        const stroke=isTwo?P.sv2Stroke:P.sv3Stroke, fill=isTwo?P.sv2Fill:P.sv3Fill;
+        const txt=isTwo?P.sv2Fg:P.sv3Fg;
+        if(d.src.shared){
+          o.push('<rect x="'+(d.x-5)+'" y="'+(d.y-NH/2-5)+'" width="'+(NW+10)+'" height="'+(NH+10)+'" rx="11" fill="none" stroke="'+P.svAmber+'" stroke-width="1.2" stroke-dasharray="4 3"/>');
+        }
+        o.push('<rect x="'+d.x+'" y="'+(d.y-NH/2)+'" width="'+NW+'" height="'+NH+'" rx="8" fill="'+fill+'" stroke="'+stroke+'" stroke-width="1.4"/>');
+        o.push('<text x="'+(d.x+NW/2)+'" y="'+(d.y+1)+'" fill="'+txt+'" font-size="17" text-anchor="middle">'+d.src.type+'</text>');
+        o.push('<text x="'+(d.x+NW/2)+'" y="'+(d.y+14)+'" fill="'+stroke+'" font-size="9.5" text-anchor="middle">分器</text>');
+        if(d.src.shared){
+          o.push('<text x="'+(d.x+NW/2)+'" y="'+(d.y-NH/2-10)+'" fill="'+P.svAmber+'" font-size="10.5" text-anchor="middle">共用</text>');
+        }
+      }
+      d.kids.forEach(nodes);
+    })(disp);
+  }
+
+  o.push('</svg>');
+  return {svg:o.join(''),w:W,h:H};
+}
+
+function renderNetwork(){
+  const p=state.plan;
+  if(!p||!p.net){ els.net.innerHTML='<div style="padding:18px;color:var(--dim)">暂无接法</div>'; return; }
+  els.net.innerHTML=netSVG(p).svg;
+  if(!p.net.perfect){
+    const w=document.createElement('div');
+    w.className='note'; w.style.color='var(--bad-fg)';
+    w.innerHTML='<b>注意：</b>受分器输出口数量限制，该接法需要额外器件，为近似方案。';
+    els.net.appendChild(w);
+  }
+}
+
+function drawChart(){
+  const cv=els.chart, ctx=cv.getContext('2d');
+  const P=PAL();
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const W=cv.clientWidth, H=cv.clientHeight;
+  if(!W||!H) return;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){ cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  const p=state.plan, pms=state.params;
+  if(!p||!p.sim||!pms) return;
+  const sim=p.sim, HZ=sim.horizon;
+  const PADL=86, PADR=20;
+  const eTop=24, eBot=H-206, tTop=H-176, tBot=H-52, xLab=H-28;
+  const plotW=W-PADL-PADR;
+  let {x0,x1}=state.view;
+  x0=Math.max(0,Math.min(HZ,x0)); x1=Math.max(x0+1,Math.min(HZ,x1));
+  const X=t=>PADL+(t-x0)/(x1-x0)*plotW;
+
+  let vmin=Infinity,vmax=-Infinity;
+  const i0=Math.max(0,Math.floor(x0)), i1=Math.min(HZ,Math.ceil(x1));
+  for(let s=i0;s<i1;s++){ const v=sim.E[s]; if(v<vmin)vmin=v; if(v>vmax)vmax=v; }
+  if(!isFinite(vmin)){ vmin=0; vmax=1; }
+  if(vmax-vmin<1e-6) vmax=vmin+1;
+  const pad=(vmax-vmin)*0.10;
+  let y0=vmin-pad, y1=vmax+pad;
+  if(y0<0) y0=0;
+  if(y0>0 && y0< vmax*0.02) y0=0;
+  const ystep=niceStep(Math.max((y1-y0)/4,1e-9));
+  y0=Math.floor(y0/ystep)*ystep;
+  y1=Math.ceil(y1/ystep)*ystep;
+  if(y1<=y0) y1=y0+ystep;
+  const nTick=Math.min(8,Math.max(1,Math.round((y1-y0)/ystep)));
+  const Y=v=>eBot-(v-y0)/(y1-y0)*(eBot-eTop);
+
+  ctx.fillStyle=P.plot; ctx.fillRect(PADL,eTop,plotW,eBot-eTop);
+  ctx.strokeStyle=P.grid; ctx.lineWidth=1;
+  ctx.font='11px '+getComputedStyle(document.body).fontFamily;
+  for(let i=0;i<=nTick;i++){
+    const val=y0+ystep*i, yy=Y(val);
+    if(yy<eTop-0.5||yy>eBot+0.5) continue;
+    ctx.beginPath(); ctx.moveTo(PADL,yy); ctx.lineTo(W-PADR,yy); ctx.stroke();
+    ctx.fillStyle=P.axis; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(fmt(val,0), PADL-9, yy);
+  }
+  ctx.fillStyle=P.axis; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText('后备电量', PADL+4, eTop+4);
+
+  const cols=[];
+  const pxW=Math.max(1,plotW);
+  for(let px=0;px<pxW;px++){
+    const sa=x0+(px/pxW)*(x1-x0), sb=x0+((px+1)/pxW)*(x1-x0);
+    let s0=Math.floor(sa), s1=Math.floor(sb);
+    if(s1<s0) s1=s0;
+    let mn=Infinity,mx=-Infinity,bn=0,n=0;
+    for(let s=s0;s<=s1;s++){
+      if(s<i0||s>=i1) continue;
+      const v=sim.E[s];
+      if(v<mn)mn=v; if(v>mx)mx=v;
+      if(sim.burn[s])bn++;
+      n++;
+    }
+    cols.push(n?{mn,mx,cover:bn/n}:null);
+  }
+  for(let px=0;px<pxW;px++){
+    const c=cols[px]; if(!c||!c.cover) continue;
+    ctx.fillStyle='rgba(245,158,11,'+(0.025+0.07*c.cover).toFixed(3)+')';
+    ctx.fillRect(PADL+px,eTop,1,eBot-eTop);
+  }
+  const my=Y(pms.margin);
+  if(my>eTop&&my<eBot){ ctx.fillStyle='rgba(248,113,113,.07)'; ctx.fillRect(PADL,my,plotW,eBot-my); }
+
+  const g=ctx.createLinearGradient(0,eTop,0,eBot);
+  g.addColorStop(0,'rgba(56,189,248,.16)'); g.addColorStop(1,'rgba(56,189,248,.01)');
+  ctx.beginPath();
+  ctx.moveTo(PADL,Y(cols[0]?cols[0].mx:y0));
+  for(let px=0;px<pxW;px++){ const c=cols[px]; if(c) ctx.lineTo(PADL+px,Y(c.mx)); }
+  for(let px=pxW-1;px>=0;px--){ const c=cols[px]; if(c) ctx.lineTo(PADL+px,Y(c.mn)); }
+  ctx.closePath(); ctx.fillStyle=g; ctx.fill();
+
+  const pxPerSec=plotW/(x1-x0);
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  if(pxPerSec>=1.25){
+    ctx.beginPath();
+    let started=false;
+    for(let s=i0;s<i1;s++){
+      const xa=X(s), xb=X(s+1), yy=Y(sim.E[s]);
+      if(!started){ ctx.moveTo(xa,yy); started=true; } else ctx.lineTo(xa,yy);
+      ctx.lineTo(xb,yy);
+    }
+    ctx.strokeStyle=P.halo; ctx.lineWidth=4.6; ctx.stroke();
+    ctx.strokeStyle=P.curve; ctx.lineWidth=2.2; ctx.stroke();
+    if(pxPerSec>=4){
+      for(let s=i0;s<i1;s++){
+        const xa=X(s), yy=Y(sim.E[s]);
+        if(xa<PADL-1||xa>W-PADR+1) continue;
+        ctx.fillStyle=P.dotbg; ctx.beginPath(); ctx.arc(xa,yy,2.6,0,6.284); ctx.fill();
+        ctx.fillStyle=P.dotin; ctx.beginPath(); ctx.arc(xa,yy,1.5,0,6.284); ctx.fill();
+      }
+    }
+  } else {
+    ctx.beginPath();
+    for(let px=0;px<pxW;px++){ const c=cols[px]; if(!c) continue; const yy=Y(c.mx); px?ctx.lineTo(PADL+px,yy):ctx.moveTo(PADL+px,yy); }
+    ctx.strokeStyle=P.halo2; ctx.lineWidth=4; ctx.stroke();
+    ctx.strokeStyle=P.curve; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.beginPath();
+    for(let px=0;px<pxW;px++){ const c=cols[px]; if(!c) continue; const yy=Y(c.mn); px?ctx.lineTo(PADL+px,yy):ctx.moveTo(PADL+px,yy); }
+    ctx.strokeStyle=P.halo2; ctx.lineWidth=4; ctx.stroke();
+    ctx.strokeStyle=P.outline; ctx.lineWidth=1.4; ctx.stroke();
+  }
+
+  function hline(v,color,dash,label){
+    const yy=Y(v); if(yy<eTop||yy>eBot) return;
+    ctx.save(); ctx.setLineDash(dash); ctx.strokeStyle=color; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(PADL,yy); ctx.lineTo(W-PADR,yy); ctx.stroke(); ctx.restore();
+    if(label){ ctx.fillStyle=color; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.font='11px '+getComputedStyle(document.body).fontFamily;
+      ctx.fillText(label, W-PADR-3, yy-2); }
+  }
+  hline(pms.capacity,P.cap,[6,4],'容量 '+fmt(pms.capacity,0));
+  hline(pms.margin,P.amber,[2,3],'安全线 '+fmt(pms.margin,0));
+  hline(0,P.dimline,[],'');
+
+  ctx.save(); ctx.setLineDash([3,5]); ctx.strokeStyle=P.violet45; ctx.lineWidth=1;
+  for(let k=1;k*p.L<=HZ;k++){
+    const xx=X(k*p.L); if(xx<PADL||xx>W-PADR) continue;
+    ctx.beginPath(); ctx.moveTo(xx,eTop); ctx.lineTo(xx,eBot); ctx.stroke();
+    if(k*p.L<=x1) { ctx.fillStyle=P.violet80; ctx.font='10px '+getComputedStyle(document.body).fontFamily;
+      ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('L×'+k, xx+2, eTop+2); }
+  }
+  ctx.restore();
+  if(sim.saturatedAt>0 && sim.saturatedAt>=x0 && sim.saturatedAt<=x1){
+    const xx=X(sim.saturatedAt);
+    ctx.save(); ctx.setLineDash([4,3]); ctx.strokeStyle=P.green80; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(xx,eTop); ctx.lineTo(xx,tBot); ctx.stroke(); ctx.restore();
+  }
+
+  ctx.fillStyle=P.accent;
+  for(const s of sim.arrivals){
+    if(s<x0||s>x1) continue;
+    const xx=X(s); ctx.fillRect(xx-0.5,eBot-6,1.4,6);
+  }
+
+  ctx.fillStyle=P.plot; ctx.fillRect(PADL,tTop,plotW,tBot-tTop);
+  ctx.strokeStyle=P.grid; ctx.beginPath(); ctx.moveTo(PADL,tBot); ctx.lineTo(W-PADR,tBot); ctx.stroke();
+  const rows=p.groups;
+  const rowH=Math.min(34,(tBot-tTop)/Math.max(1,rows.length));
+  const burnPx=40*(plotW/(x1-x0));
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  rows.forEach((gr,ri)=>{
+    const cy=tTop+rowH*ri+rowH/2;
+    ctx.strokeStyle=P.grid2; ctx.beginPath(); ctx.moveTo(PADL,cy); ctx.lineTo(W-PADR,cy); ctx.stroke();
+    ctx.fillStyle=P.text; ctx.font='11.5px '+getComputedStyle(document.body).fontFamily;
+    ctx.fillText('d='+gr.d+(gr.count>1?'×'+gr.count:''), PADL-9, cy-6);
+    ctx.fillStyle=P.axis; ctx.font='10.5px '+getComputedStyle(document.body).fontFamily;
+    ctx.fillText('T='+fmt(gr.T,0)+'s', PADL-9, cy+8);
+    if(burnPx>=2.5){
+      gr.idx.forEach(bi=>{
+        const list=sim.perBranch[bi]||[];
+        for(const a of list){
+          const s0=Math.max(a,x0), s1=Math.min(a+40,x1);
+          if(s1<=x0||s0>=x1) continue;
+          ctx.fillStyle='rgba(245,158,11,.72)';
+          ctx.fillRect(X(s0),cy-rowH*0.22,Math.max(1.2,X(s1)-X(s0)),rowH*0.44);
+        }
+      });
+      gr.idx.forEach(bi=>{
+        const list=sim.perBranch[bi]||[];
+        for(const a of list){
+          if(a<x0-1||a>x1+1) continue;
+          ctx.fillStyle=P.accent;
+          ctx.fillRect(X(a)-1,cy-rowH*0.42,2,rowH*0.84);
+        }
+      });
+    } else {
+      const cols=Math.round(plotW);
+      for(let px=0;px<cols;px++){
+        const sa=x0+(px/cols)*(x1-x0), sb=x0+((px+1)/cols)*(x1-x0);
+        let cover=0, n=0;
+        for(let s=Math.floor(sa); s<=Math.floor(sb); s++){
+          if(s<0||s>=sim.horizon) continue;
+          if(sim.burn[s]) cover++;
+          n++;
+        }
+        if(!n) continue;
+        const c=cover/n;
+        ctx.fillStyle = c>0 ? 'rgba(245,158,11,'+(0.10+0.55*c).toFixed(3)+')' : P.rowidle;
+        ctx.fillRect(PADL+px,cy-rowH*0.22,1,rowH*0.44);
+      }
+    }
+  });
+
+  if(pxPerSec>=10){
+    ctx.save(); ctx.strokeStyle='rgba(56,189,248,.10)'; ctx.lineWidth=1;
+    for(let v=Math.ceil(x0); v<=x1; v++){
+      const xx=X(v); if(xx<PADL||xx>W-PADR) continue;
+      ctx.beginPath(); ctx.moveTo(xx,eTop); ctx.lineTo(xx,eBot); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  const span=x1-x0, rawStep=span/7, mag=Math.pow(10,Math.floor(Math.log10(Math.max(rawStep,1e-6))));
+  const nrm=rawStep/mag, step=(nrm<=1?1:nrm<=2?2:nrm<=5?5:10)*mag;
+  ctx.fillStyle=P.axis; ctx.font='11px '+getComputedStyle(document.body).fontFamily;
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let v=Math.ceil(x0/step)*step; v<=x1+1e-9; v+=step){
+    const xx=X(v); if(xx<PADL-1||xx>W-PADR+1) continue;
+    ctx.strokeStyle=P.grid; ctx.beginPath(); ctx.moveTo(xx,tBot); ctx.lineTo(xx,tBot+5); ctx.stroke();
+    ctx.fillText(fmt(v,0), xx, xLab);
+  }
+  ctx.textAlign='left'; ctx.fillStyle=P.axis;
+  ctx.fillText('时间 (s)', PADL, xLab);
+  ctx.textAlign='right'; ctx.fillStyle=P.axis;
+  ctx.fillText('◆ 电池到达 ▬ 燃烧 40 s'+(pxPerSec>=10?' │ 竖线 = 1 秒':''), W-PADR, tTop-18);
+
+  if(state.hover && state.hover.in){
+    const s=Math.round(state.hover.t); const xx=X(s);
+    if(xx>=PADL&&xx<=W-PADR&&s>=0&&s<HZ){
+      const yy=Y(sim.E[s]);
+      ctx.save(); ctx.strokeStyle=P.hoverline; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(xx,eTop); ctx.lineTo(xx,tBot); ctx.stroke(); ctx.restore();
+      ctx.fillStyle=P.curve; ctx.beginPath(); ctx.arc(xx,yy,3.2,0,6.284); ctx.fill();
+      const L1='t = '+fmt(s,0)+' s E = '+fmt(sim.E[s],0);
+      const L2=(sim.burn[s]? '⚡ 燃烧中 +'+fmt(state.params.A-state.params.Q,0)+'/s'
+                           : '○ 空闲 −'+fmt(state.params.Q,0)+'/s')
+              +' '+(s>=sim.steady.start?'稳态段':'热机段');
+      ctx.font='11.5px '+getComputedStyle(document.body).fontFamily;
+      const lw=Math.max(ctx.measureText(L1).width, ctx.measureText(L2).width)+18, lh=38;
+      let bx=xx+11, by=yy-lh-11;
+      if(bx+lw>W-PADR) bx=xx-11-lw;
+      if(bx<PADL) bx=PADL+2;
+      if(by<eTop+2) by=yy+13;
+      if(by+lh>eBot) by=eBot-lh-2;
+      ctx.save();
+      ctx.beginPath();
+      const rr=7;
+      ctx.moveTo(bx+rr,by); ctx.lineTo(bx+lw-rr,by); ctx.quadraticCurveTo(bx+lw,by,bx+lw,by+rr);
+      ctx.lineTo(bx+lw,by+lh-rr); ctx.quadraticCurveTo(bx+lw,by+lh,bx+lw-rr,by+lh);
+      ctx.lineTo(bx+rr,by+lh); ctx.quadraticCurveTo(bx,by+lh,bx,by+lh-rr);
+      ctx.lineTo(bx,by+rr); ctx.quadraticCurveTo(bx,by,bx+rr,by); ctx.closePath();
+      ctx.fillStyle=P.labelbg; ctx.fill();
+      ctx.strokeStyle=P.labelbd; ctx.lineWidth=1; ctx.stroke();
+      ctx.fillStyle=P.labelfg; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(L1, bx+9, by+13);
+      ctx.fillStyle=P.text;
+      ctx.fillText(L2, bx+9, by+28);
+      ctx.restore();
+    }
+  }
+}
+
+function showTip(ev){
+  const p=state.plan; if(!p||!p.sim) return;
+  const cv=els.chart, r=cv.getBoundingClientRect();
+  const W=cv.clientWidth, PADL=86, PADR=20, plotW=W-PADL-PADR;
+  const px=ev.clientX-r.left;
+  if(px<PADL-4||px>W-PADR+4){ state.hover={in:false}; drawChart(); return; }
+  const {x0,x1}=state.view;
+  const tt=x0+(px-PADL)/plotW*(x1-x0);
+  const s=Math.max(0,Math.min(p.sim.horizon-1,Math.round(tt)));
+  state.hover={in:true,t:s};
+  drawChart();
+}
+
+els.chart.addEventListener('mousemove',showTip);
+els.chart.addEventListener('mouseleave',()=>{ state.hover={in:false}; drawChart(); });
+els.chart.addEventListener('wheel',ev=>{
+  const p=state.plan; if(!p||!p.sim) return;
+  ev.preventDefault();
+  const cv=els.chart, r=cv.getBoundingClientRect(), W=cv.clientWidth;
+  const PADL=86, PADR=20, plotW=W-PADL-PADR;
+  const px=ev.clientX-r.left;
+  const {x0,x1}=state.view;
+  const anchor=x0+Math.max(0,Math.min(1,(px-PADL)/plotW))*(x1-x0);
+  const f=ev.deltaY<0?0.82:1.22;
+  const span=Math.max(4,Math.min(p.sim.horizon,(x1-x0)*f));
+  const ratio=(anchor-x0)/(x1-x0);
+  state.view={x0:anchor-span*ratio, x1:anchor+span*(1-ratio)};
+  clampView(); drawChart();
+},{passive:false});
+els.chart.addEventListener('pointerdown',ev=>{
+  els.chart.setPointerCapture(ev.pointerId);
+  state.pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  if(state.pointers.size===1) state.drag={x:ev.clientX,v:{...state.view}};
+  else if(state.pointers.size===2){
+    const a=[...state.pointers.values()];
+    state.pinch={dist:Math.max(1,Math.abs(a[0].x-a[1].x)),span:state.view.x1-state.view.x0};
+    state.drag=null;
+  }
+});
+els.chart.addEventListener('pointermove',ev=>{
+  if(!state.pointers.has(ev.pointerId)) return;
+  state.pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+  const p=state.plan; if(!p||!p.sim) return;
+  if(state.pointers.size===2&&state.pinch){
+    const a=[...state.pointers.values()];
+    const dist=Math.max(1,Math.abs(a[0].x-a[1].x));
+    const f=state.pinch.span*state.pinch.dist/dist;
+    const c=(state.view.x0+state.view.x1)/2;
+    const span=Math.max(4,Math.min(p.sim.horizon,f));
+    state.view={x0:c-span/2,x1:c+span/2}; clampView(); drawChart(); return;
+  }
+  if(state.drag){
+    const cv=els.chart, W=cv.clientWidth, PADL=86, PADR=20, plotW=W-PADL-PADR;
+    const dt=(ev.clientX-state.drag.x)/plotW*(state.drag.v.x1-state.drag.v.x0);
+    state.view={x0:state.drag.v.x0-dt, x1:state.drag.v.x1-dt};
+    clampView(); drawChart();
+  }
+});
+['pointerup','pointercancel'].forEach(t=>els.chart.addEventListener(t,ev=>{
+  state.pointers.delete(ev.pointerId);
+  if(state.pointers.size<2) state.pinch=null;
+  if(state.pointers.size===0) state.drag=null;
+}));
+els.chart.addEventListener('dblclick',()=>{ setView('all'); });
+
+document.querySelectorAll('[data-view]').forEach(b=>{
+  const m=b.dataset.view;
+  if(m==='wheelnote') return;
+  b.addEventListener('click',()=>setView(m));
+});
 $('run').addEventListener('click',run);
-$('export').addEventListener('click',()=>{
- if(!chartData)return;
- const rows=['time_seconds,backup_energy'];
- const N=Math.min(5000, chartData.times.length);
- const stride=Math.max(1,Math.floor(chartData.times.length/N));
- for(let i=0;i<chartData.times.length;i+=stride){
-  rows.push(`${chartData.times[i].toFixed(4)},${chartData.energy[i].toFixed(4)}`);
- }
- if((chartData.times.length-1)%stride!==0){
-  const last=chartData.times.length-1;
-  rows.push(`${chartData.times[last].toFixed(4)},${chartData.energy[last].toFixed(4)}`);
- }
- const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='潮汐供电电量曲线.csv';a.click();URL.revokeObjectURL(url);
+$('demoShare').addEventListener('click',()=>{
+  els.Q.value=DEFAULT.Q; els.A.value=DEFAULT.A; els.t.value=DEFAULT.t;
+  setField('capacity', 400000); setField('margin', DEFAULT.margin); els.E0mode.value='full';
+  run();
 });
-window.addEventListener('resize',()=>{draw();});
-draw();
+$('demoZero').addEventListener('click',()=>{ els.E0mode.value='zero'; run(); });
+$('reset').addEventListener('click',()=>{
+  els.Q.value=DEFAULT.Q; els.A.value=DEFAULT.A; els.t.value=DEFAULT.t;
+  setField('capacity', DEFAULT.capacity); setField('margin', DEFAULT.margin);
+  els.nMax.value=DEFAULT.nMax; els.depth.value=DEFAULT.depth; els.strict.checked=DEFAULT.strict;
+  els.E0mode.value=DEFAULT.E0mode;
+  run();
+});
+$('csv').addEventListener('click',()=>{
+  const p=state.plan; if(!p||!p.sim) return;
+  const sim=p.sim, rows=['time_seconds,backup_energy,burning,phase'];
+  for(let s=0;s<sim.horizon;s++){
+    rows.push(s+','+sim.E[s].toFixed(4)+','+sim.burn[s]+','+(s>=sim.steady.start?'steady':'warmup'));
+  }
+  const blob=new Blob(['\ufeff'+rows.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='潮汐供电_电量曲线_1s离散.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+});
+window.addEventListener('resize',()=>{ drawChart(); });
+['Q','A','t','capacity','margin','nMax','depth','strict','E0mode'].forEach(id=>{
+  els[id].addEventListener('change',()=>{
+    if(RANGES[id]) setField(id, +els[id].value);
+    if(state.res) run();
+  });
+});
+Object.keys(RANGES).forEach(id=>{
+  const r = els[RANGES[id]]; if(!r) return;
+  r.addEventListener('input', ()=>{ els[id].value = r.value; });
+  r.addEventListener('change', ()=>{ els[id].value = r.value; run(); });
+});
+
+const THEME_KEY='tidal-theme';
+function currentTheme(){ return document.documentElement.dataset.theme==='dark' ? 'dark' : 'light'; }
+function applyTheme(t){
+  document.documentElement.dataset.theme=t;
+  const b=document.getElementById('themeBtn');
+  if(b) b.textContent = t==='dark' ? '☀ 浅色' : '🌙 深色';
+  try{ localStorage.setItem(THEME_KEY,t); }catch(e){}
+  renderNetwork(); drawChart();
+}
+$('themeBtn').addEventListener('click',()=>applyTheme(currentTheme()==='dark'?'light':'dark'));
+try{ const saved=localStorage.getItem(THEME_KEY); if(saved) document.documentElement.dataset.theme=saved; }catch(e){}
+applyTheme(currentTheme());
+
+run();
 })();
 </script>
 </body>
