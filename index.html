@@ -1207,16 +1207,23 @@ function netSVG(p){
     })(rd.disp, 0);
   }
 
-  for (const rd of rootDisps) {
+for (const rd of rootDisps) {
     (function layout(d){
       const isOut=!d.src, isRoot=d.src&&d.src.type==='root';
       d.w = isOut? OW : (isRoot? ROOTW : NW);
       d.h = isOut? OH : NH;
-      d.x = PADL + HEADGAP + d.dep*DX + (d.dep>0?HEADGAP:0);
-      d.y = PADT + d.row*DY;
+      // 修正：让独立树的各级节点向右错开，避免与左侧“电池输入”重叠
+      d.x = PADL + ROOTW + HEADGAP + d.dep * DX;
+      d.y = PADT + d.row * DY;
       d.kids.forEach(layout);
     })(rd.disp);
   }
+
+  const totalRows = globalRowCursor;
+  const rootX = PADL;
+  const rootY = PADT + ((totalRows - 1) * DY) / 2;
+
+  const W = PADL + ROOTW + HEADGAP + (maxDep + 1) * DX + OW + 26;
 
   const totalRows = globalRowCursor;
   const rootX = PADL;
