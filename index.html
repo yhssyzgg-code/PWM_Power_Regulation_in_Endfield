@@ -158,10 +158,11 @@ footer code{font-family:var(--mono);color:var(--code)}
 .netwrap svg{display:block;height:auto;max-width:100%}
 .netnote{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted);font-size:12px;margin-top:10px}
 .netnote i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px}
+.range-limits{display:flex;justify-content:space-between;color:var(--dim);font:11px var(--mono)}
 </style>
 <style>
 :root{--bg:#f5f7fa;--card2:#fff;--cyan:#2563eb;--line:#e6eaf0;--line2:#d9e1eb;--shadow:none;--fg:#17243b;--panel:#f8fafd;--verdict-bg1:#edf4ff;--verdict-bg2:#edf4ff;--verdict-bd:#dce8fb}
-body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{grid-template-columns:286px minmax(0,1fr);gap:24px}header.top{margin-bottom:28px;align-items:center}header.top h1{font-size:26px;letter-spacing:-.6px}header.top p{margin-top:5px}.tagline{display:none}.card{padding:22px;border-radius:16px}.card+.card{margin-top:20px}.card h2{font-size:15px;color:var(--fg);letter-spacing:0;margin-bottom:18px}.card h2:before{display:none}.field{margin-bottom:18px}.field input[type=number]{padding:11px 12px}.field>span{font-size:13px;color:var(--fg)}#Q,#A,#t{font-size:23px}.btn.primary{background:#2563eb;border:0;border-radius:10px}.btn{background:var(--card);border-color:var(--line)}.rng,#demoShare,#demoZero,#strict,.switch,.netnote,.chips{display:none}.verdict{border:0;background:none;padding:0;margin:0}.verdict .title{font-size:21px}.verdict .sub{font-size:12px;line-height:1.8;margin-top:7px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}.metric{border:0;border-radius:9px;background:var(--panel);padding:12px}.metric .v{font-size:21px}.metric .n{font-size:11px}.cvwrap{border:0;border-radius:8px}canvas{height:380px}.netwrap{border:0;background:var(--panel);padding:16px;border-radius:10px}.netwrap svg{min-width:660px}.legend{font-size:11px;gap:14px}.legend>span:nth-child(n+5){display:none}.note{font-size:12px}.btnrow{gap:7px}.fold>summary{cursor:pointer;list-style:none;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}.fold>summary:after{content:'展开 +';font-size:12px;font-weight:400;color:var(--dim)}.fold[open]>summary:after{content:'收起 −'}.fold[open]>summary{margin-bottom:20px}.fold .card{padding:0;border:0;margin:22px 0 0;box-shadow:none}.audit-note{margin-top:12px;border-radius:8px;padding:10px 13px;background:var(--panel);font-size:12px;color:var(--muted)}.audit-note.bad{background:#fff1ed;color:#a63d2f}.status{min-height:0;font-size:11px}footer{max-width:100%;font-size:11px}.result-title{font-size:11px;letter-spacing:2px;color:var(--cyan);margin-bottom:8px}.hintline{color:var(--dim);font-size:11px;margin-top:10px}details.adv{border-top:1px solid var(--line);margin:22px 0 16px;padding-top:16px}html[data-theme=dark] body{background:var(--bg)}html[data-theme=dark] .metric{background:var(--panel)}@media(max-width:1080px){.grid{grid-template-columns:260px minmax(0,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.wrap{padding:22px 16px}.grid{grid-template-columns:1fr}.card{padding:18px}header.top h1{font-size:23px}.top p{max-width:290px}.field{margin-bottom:14px}canvas{height:320px}.netwrap{padding:8px}.metrics{gap:8px}#themeBtn{margin-left:auto}footer div{margin-bottom:8px}}
+body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{grid-template-columns:286px minmax(0,1fr);gap:24px}header.top{margin-bottom:28px;align-items:center}header.top h1{font-size:26px;letter-spacing:-.6px}header.top p{margin-top:5px}.tagline{display:none}.card{padding:22px;border-radius:16px}.card+.card{margin-top:20px}.card h2{font-size:15px;color:var(--fg);letter-spacing:0;margin-bottom:18px}.card h2:before{display:none}.field{margin-bottom:18px}.field input[type=number]{padding:11px 12px}.field>span{font-size:13px;color:var(--fg)}#Q,#A,#t{font-size:23px}.btn.primary{background:#2563eb;border:0;border-radius:10px}.btn{background:var(--card);border-color:var(--line)}#demoShare,#demoZero,#strict,.switch,.netnote,.chips{display:none}.verdict{border:0;background:none;padding:0;margin:0}.verdict .title{font-size:21px}.verdict .sub{font-size:12px;line-height:1.8;margin-top:7px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}.metric{border:0;border-radius:9px;background:var(--panel);padding:12px}.metric .v{font-size:21px}.metric .n{font-size:11px}.cvwrap{border:0;border-radius:8px}canvas{height:380px}.netwrap{border:0;background:var(--panel);padding:16px;border-radius:10px}.netwrap svg{min-width:660px}.legend{font-size:11px;gap:14px}.legend>span:nth-child(n+5){display:none}.note{font-size:12px}.btnrow{gap:7px}.fold>summary{cursor:pointer;list-style:none;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}.fold>summary:after{content:'展开 +';font-size:12px;font-weight:400;color:var(--dim)}.fold[open]>summary:after{content:'收起 −'}.fold[open]>summary{margin-bottom:20px}.fold .card{padding:0;border:0;margin:22px 0 0;box-shadow:none}.audit-note{margin-top:12px;border-radius:8px;padding:10px 13px;background:var(--panel);font-size:12px;color:var(--muted)}.audit-note.bad{background:#fff1ed;color:#a63d2f}.status{min-height:0;font-size:11px}footer{max-width:100%;font-size:11px}.result-title{font-size:11px;letter-spacing:2px;color:var(--cyan);margin-bottom:8px}.hintline{color:var(--dim);font-size:11px;margin-top:10px}details.adv{border-top:1px solid var(--line);margin:22px 0 16px;padding-top:16px}html[data-theme=dark] body{background:var(--bg)}html[data-theme=dark] .metric{background:var(--panel)}@media(max-width:1080px){.grid{grid-template-columns:260px minmax(0,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:760px){.wrap{padding:22px 16px}.grid{grid-template-columns:1fr}.card{padding:18px}header.top h1{font-size:23px}.top p{max-width:290px}.field{margin-bottom:14px}canvas{height:320px}.netwrap{padding:8px}.metrics{gap:8px}#themeBtn{margin-left:auto}footer div{margin-bottom:8px}}
 </style>
 <style>.chartmeta{display:flex;flex-wrap:wrap;gap:6px 18px;color:var(--muted);font-size:11px;line-height:1.8;margin-bottom:12px}.nettools{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px}.nettools span{font-size:11px;color:var(--muted)}#net{height:320px;position:relative;overflow:hidden;padding:0;touch-action:none;cursor:grab}#net.dragging{cursor:grabbing}#net svg{position:absolute;left:0;top:0;max-width:none;min-width:0;transform-origin:0 0;user-select:none;pointer-events:none}@media(max-width:760px){#net{height:260px}}</style>
 </head>
@@ -189,6 +190,15 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
         <label class="field"><span>t 电池供给间隔<em>秒</em></span>
           <input id="t" type="number" value="2" min="0.5" step="0.5"></label>
 
+        <div class="field"><span><label for="capacity">后备电量容量</label><em>单位</em></span>
+          <input id="capacity" type="number" value="100000" min="500" max="100000" step="1">
+          <input id="capacityR" class="rng" aria-label="后备电量容量" type="range" min="500" max="100000" step="1" value="100000">
+          <div class="range-limits"><span>500</span><span>100,000</span></div></div>
+        <div class="field"><span><label for="margin">最低安全电量</label><em>单位</em></span>
+          <input id="margin" type="number" value="500" min="500" max="100000" step="1">
+          <input id="marginR" class="rng" aria-label="最低安全电量" type="range" min="500" max="100000" step="1" value="500">
+          <div class="range-limits"><span>500</span><span>100,000</span></div></div>
+
         <details class="adv">
           <summary>固定到达时序</summary>
           <label class="field"><span>统一输送延迟<em>秒</em></span><input id="transport" type="number" min="0" max="86400" step="0.001" value="0"></label>
@@ -196,12 +206,6 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
         </details>
         <details class="adv">
           <summary>储能与搜索设置</summary>
-          <label class="field"><span>后备电量容量<em>单位</em></span>
-            <input id="capacity" type="number" value="100000" min="1" step="1000">
-            <input id="capacityR" class="rng" type="range" min="0" max="100000" step="1000" value="100000"></label>
-          <label class="field"><span>最低安全电量<em>单位</em></span>
-            <input id="margin" type="number" value="500" min="0" step="100">
-            <input id="marginR" class="rng" type="range" min="0" max="100000" step="100" value="500"></label>
           <label class="field"><span>初始电量<em>仿真起点</em></span>
             <select id="E0mode">
               <option value="full" selected>满容量（默认；设备仍为空）</option>
@@ -230,7 +234,7 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
           <button class="btn small" id="csv">导出曲线 CSV</button>
         </div>
         <div class="btnrow">
-          <button class="btn small" id="demoShare" title="把后备容量放大到 40 万，看多条支路如何共用分流器">示例：多支路共用接法</button>
+          <button class="btn small" id="demoShare" title="查看多条支路如何共用分流器">示例：多支路共用接法</button>
           <button class="btn small" id="demoZero" title="从 0 电量起步，看缓冲被充满的过程">示例：空箱起步</button>
         </div>
         <div class="status" id="status"></div>
@@ -1112,6 +1116,7 @@ function readParams(){
   if(!(p.Q>0&&p.A>0&&p.t>0&&p.capacity>0&&p.margin>=0)) throw new Error('Q、A、t、容量必须大于 0，安全电量不能为负。');
   if(!Object.values(p).filter(value=>typeof value==='number').every(Number.isFinite)) throw new Error('请输入有限数值。');
   if(p.A<p.Q) throw new Error('单热能池模型要求 A ≥ Q；当前满速发电仍不足。');
+  if(p.capacity<500||p.capacity>100000||p.margin<500||p.margin>100000) throw new Error('后备电量容量和最低安全电量须在 500～100000 之间。');
   if(p.margin>p.capacity) throw new Error('安全电量不能高于容量。');
   if(p.t<0.001||p.t>3600||Math.abs(p.t*1000-Math.round(p.t*1000))>1e-7) throw new Error('t 为 0.001～3600 秒，最多三位小数。');
   if(p.A>1e9||p.Q>1e9||p.capacity>1e12) throw new Error('Q、A 不超过 10⁹，容量不超过 10¹²。');
@@ -1937,7 +1942,7 @@ $('run').addEventListener('click',run);
 $('warmDemo').addEventListener('click',()=>{els.Q.value=325;els.A.value=1600;els.t.value=2;setField('capacity',100000);setField('margin',500);els.E0mode.value='full';els.transport.value='0';els.nMax.value=6;els.depth.value='deep';run();});
 $('demoShare').addEventListener('click',()=>{
   els.Q.value=DEFAULT.Q; els.A.value=DEFAULT.A; els.t.value=DEFAULT.t;
-  setField('capacity', 400000); setField('margin', DEFAULT.margin); els.E0mode.value='full';
+  setField('capacity', 100000); setField('margin', DEFAULT.margin); els.E0mode.value='full';
   run();
 });
 $('demoZero').addEventListener('click',()=>{ els.E0mode.value='zero'; run(); });
