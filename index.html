@@ -224,7 +224,7 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
 
         <button class="btn primary" id="run">计算分流方案</button>
         <button class="btn small" id="warmDemo" style="margin-top:10px;width:100%">查看固定到达暖机示例</button>
-        <p class="hintline">暖机触底不会淘汰方案；最终仍需满足稳定周期的供电、安全电量和排队约束。</p>
+        <p class="hintline">暖机触底不直接淘汰方案；持续供电起点必须 ≤ 2000 s，超过即淘汰。仍需满足稳定周期的供电、安全电量和排队约束。</p>
         <div class="btnrow">
           <button class="btn small" id="reset">恢复默认</button>
           <button class="btn small" id="csv">导出曲线 CSV</button>
@@ -917,6 +917,13 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
     };
   }
 
+  // 持续供电起点上限；2000 秒本身允许通过，周期验证完成时刻不受此限制。
+  const SUSTAINED_LIMIT = 2000;
+  function meetsSustainedLimit(result) {
+    return result.sustainedStatus === 'confirmed' && Number.isFinite(result.sustainedAt)
+      && result.sustainedAt >= 0 && result.sustainedAt <= SUSTAINED_LIMIT;
+  }
+
   /* ------------------------- 总入口 ------------------------- */
   function computeAll(p) {
     const t0 = Date.now();
@@ -948,9 +955,16 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
         min: sim.steady.min, max: sim.steady.max, blackout: sim.steady.blackout,
         waited: sim.waitedArrivals, overflow: sim.steady.overflow, span: sim.steady.span,
         supplyRatio: sim.steady.supplyRatio, saturatedAt: sim.saturatedAt,
+        sustainedAt: sim.sustainedAt, sustainedStatus: sim.sustainedStatus,
         horizon: sim.horizon, periods: Math.round(sim.horizon / plan.L),
         maxWait: sim.maxWait, queueMax: sim.queueMax, finalQueue: sim.finalQueue
       };
+      if (!meetsSustainedLimit(sim)) {
+        plan.note = sim.sustainedAt === null ? '未确认电量不再耗尽，无法满足持续供电起点 ≤ 2000 s'
+          : `持续供电起点 ${sim.sustainedAt} s > ${SUSTAINED_LIMIT} s，超过上限`;
+        rejected.push(plan);
+        continue;
+      }
       // 时序约束：允许偶尔短暂排队，但不能积压（等待不得超过一次燃烧时长，末尾不能还有一堆电池在等）
       if (sim.maxWait > (p.tau || TAU) + 1e-9 || sim.finalQueue > 1) {
         plan.note = `电池积压：最长排队 ${sim.maxWait.toFixed(0)} s、末尾仍有 ${sim.finalQueue} 块在等`;
@@ -982,7 +996,7 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
       if (bestSingle) break;
       if (plan.n !== 1) continue;
       if (plan.stat) {
-        if (plan.stat.min >= p.margin - 1e-9 && plan.stat.blackout <= 0 && plan.stat.maxWait <= (p.tau || TAU)) bestSingle = plan;
+        if (meetsSustainedLimit(plan.stat) && plan.stat.min >= p.margin - 1e-9 && plan.stat.blackout <= 0 && plan.stat.maxWait <= (p.tau || TAU) && plan.stat.finalQueue <= 1) bestSingle = plan;
         continue;
       }
       if (Math.min(defaultHorizon(plan.L), EVAL_CAP) < 2 * plan.L) continue;
@@ -994,10 +1008,11 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
         min: sim1.steady.min, max: sim1.steady.max, blackout: sim1.steady.blackout,
         waited: sim1.waitedArrivals, overflow: sim1.steady.overflow, span: sim1.steady.span,
         supplyRatio: sim1.steady.supplyRatio, saturatedAt: sim1.saturatedAt,
+        sustainedAt: sim1.sustainedAt, sustainedStatus: sim1.sustainedStatus,
         horizon: sim1.horizon, periods: Math.round(sim1.horizon / plan.L),
         maxWait: sim1.maxWait, queueMax: sim1.queueMax, finalQueue: sim1.finalQueue
       };
-      if (plan.stat.min >= p.margin - 1e-9 && plan.stat.blackout <= 0 && plan.stat.maxWait <= (p.tau || TAU)) bestSingle = plan;
+      if (meetsSustainedLimit(plan.stat) && plan.stat.min >= p.margin - 1e-9 && plan.stat.blackout <= 0 && plan.stat.maxWait <= (p.tau || TAU) && plan.stat.finalQueue <= 1) bestSingle = plan;
     }
     // 比推荐方案更精确、但没能落地的方案（解释「为什么不选它」）
     const whyNot = [];
@@ -1016,7 +1031,7 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
   const api = {
     TAU, TICK, TICK_CAP, HORIZON_CAP, EVAL_CAP, PERIODS, PRESETS, defaultHorizon,
     gcd, lcm, ipow, threshold, weightList, decompose, buildNetwork, buildNetworkExact, buildTrie,
-    searchPlans, choosePhases, simulate, computeAll, minGapOfSorted
+    searchPlans, choosePhases, simulate, computeAll, minGapOfSorted, SUSTAINED_LIMIT, meetsSustainedLimit
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.TidalCore = api;
@@ -1121,7 +1136,7 @@ function run(){
   if(!res.best){
     state.plan = res.plans.find(plan=>plan.phases) || null;
     els.status.className='status err';
-    els.status.textContent = '本次搜索未找到通过完整核验的方案。可调整容量、安全线或搜索范围；不代表数学上无解。';
+    els.status.textContent = '本次搜索未找到通过完整核验的方案。持续供电起点须 ≤ 2000 s；可调整容量、安全线或搜索范围，不代表数学上无解。';
   } else {
     els.status.className='status';
     els.status.textContent = '完成：扫描 '+res.scanned+' 组 (D,k)，候选 '+res.plans.length+' 个，用时 '+res.elapsed.toFixed(2)+' s。';
@@ -1208,7 +1223,7 @@ function clampView(allowExtend){
 function renderAll(){
   const p=state.plan;
   if(!p||!p.sim){
-    els.verdict.innerHTML='<div class="title">本次未找到通过核验的方案</div><div class="sub">检查输入供能、储能容量与搜索范围；此结果不代表所有接法都不可行。</div>';
+    els.verdict.innerHTML='<div class="title">本次未找到通过核验的方案</div><div class="sub">仅保留持续供电起点 ≤ 2000 s 且通过其他核验的方案；检查输入供能、储能容量与搜索范围，此结果不代表所有接法都不可行。</div>';
     els.metrics.innerHTML=''; els.formula.innerHTML=''; els.planTable.innerHTML=''; els.planNote.textContent=''; els.simnote.textContent='';
     els.net.innerHTML='<div style="padding:18px;color:var(--dim)">暂无接法</div>';
     renderCandidates(); renderWhy(); drawChart(); return;
@@ -2018,7 +2033,7 @@ document.querySelectorAll('.card h2 small').forEach(node=>node.remove());
 const searchSummary=document.createElement('p');searchSummary.className='hintline';searchSummary.textContent='仅比较有限搜索中的可实现接线；未找到方案不代表数学上无解。';verdictCard.appendChild(searchSummary);
 $('t').min='0.001';$('t').step='0.001';
 els.net.insertAdjacentHTML('afterend','<div class="hintline">端口按图中子分器从上到下、再到保留输出的顺序编号；未画出的端口送独立仓储。各分器从端口 1 开始轮转；统一输送延迟见固定到达时序设置，支路额外路程与合流带宽未单独建模。</div>');
-document.querySelector('footer').innerHTML='<div>默认满电开始耗电，设备与传送带为空。电池按各自支路周期独立到达，不自动错开相位；首块从第一个完整周期结束后计入，输送延迟另加，不存在额外暖机等待。</div><div>首块到达前允许后备电量耗为 0，未满足负载单独记录，不直接淘汰方案；周期运行仍检查供电、安全电量和排队。持续供电起点表示此后电量不再耗尽，须经周期复现确认；不是回满时刻。淡玫红底色表示起点之前或尚未确认，蓝色表示已确认的持续供电段；跨周期不清空系统。</div><div>每块燃烧 40 秒；到达向上取整到整数秒，先点火再结算。假设电池源缺电期间仍能供货，未画出的输出保持畅通。</div>';
+document.querySelector('footer').innerHTML='<div>默认满电开始耗电，设备与传送带为空。电池按各自支路周期独立到达，不自动错开相位；首块从第一个完整周期结束后计入，输送延迟另加，不存在额外暖机等待。</div><div>首块到达前允许后备电量耗为 0，未满足负载单独记录，不直接淘汰方案；周期运行仍检查供电、安全电量和排队。持续供电起点表示此后电量不再耗尽，须经周期复现确认；不是回满时刻。推荐、备选和单线对照均要求持续供电起点 ≤ 2000 s，超过即淘汰；周期验证完成时刻可晚于 2000 s。淡玫红底色表示起点之前或尚未确认，蓝色表示已确认的持续供电段；跨周期不清空系统。</div><div>每块燃烧 40 秒；到达向上取整到整数秒，先点火再结算。假设电池源缺电期间仍能供货，未画出的输出保持畅通。</div>';
 run();
 })();
 </script>
