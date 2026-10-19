@@ -144,6 +144,8 @@ details.adv summary{cursor:pointer;color:var(--muted);font-size:12.5px;outline:n
   .doc .nw{white-space:nowrap}
   .doc .final-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;column-gap:10px;row-gap:4px;overflow:visible}
   .doc .final-row .aside{flex:0 0 auto}
+  #proofCard{margin-top:22px}
+  #proofCard .doc{max-width:1000px;margin:0 auto;padding-top:2px}
 .doc math{font-size:15.5px}
 .doc math.big{font-size:18px}
 .doc math[display="block"]{font-size:17px}
@@ -352,9 +354,18 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
         <ul class="whynot" id="whyNot"></ul>
       </div>
 
-      <div class="card" id="proofCard">
-        <h2>计算说明<small>（《潮汐供电》统一公式推导原文）</small></h2>
-        <div class="doc">
+    </section>
+  </div>
+
+  <footer>
+    <div><b>模型与依据</b>：《潮汐供电：分流统一公式推导（修正版）》——单线 T = t·d、能量守恒 40A ≥ TQ、分数分流 f = Σ1/d<sub>i</sub>、多线通分后的统一判据 C ≥ 1/f = D/k。</div>
+    <div><b>离散结算</b>：终末地电量按 1 秒一次结算，本页仿真步长就是 1 s（1 tick）。每 tick：到达 → 若空闲则点火 → 燃烧 40 tick 内每秒净增 <code>A − Q</code>，空闲每秒净减 <code>Q</code>，电量钳在 <code>[0, 容量]</code>。</div>
+    <div><b>已知取舍</b>：分流器的物理布局、到达相位是否可按秒错开、以及溢出是否真的完全浪费，都按理想化假设处理，建议以游戏内实测校正。</div>
+  </footer>
+
+  <details class="card fold" id="proofCard">
+    <summary>震荡供电分流计算器 · 计算说明</summary>
+    <div class="doc">
           <p class="doctitle">潮汐供电：单线/多线/分数分流统一公式推导</p>
           <p class="docsub">（基于手稿逻辑修正与代数严格化版）</p>
 
@@ -401,15 +412,8 @@ body{background:var(--bg)}.wrap{max-width:1380px;padding:32px 28px 48px}.grid{gr
             <div class="disp final-row"><math display="block"><mfrac><mrow><mn>40</mn><mi>A</mi></mrow><mrow><mi>t</mi><mi>Q</mi></mrow></mfrac><mo>≥</mo><mfrac><mrow><mi>n</mi><mo>·</mo><msup><mn>2</mn><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>x</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub></mrow></msup><mo>·</mo><msup><mn>3</mn><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>x</mi><mrow><mn>3</mn><mi>i</mi></mrow></msub></mrow></msup></mrow><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msup><mn>2</mn><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>x</mi><mrow><mn>2</mn><mi>k</mi></mrow></msub><mo>−</mo><msub><mi>x</mi><mrow><mn>2</mn><mi>i</mi></mrow></msub></mrow></msup><mo>·</mo><msup><mn>3</mn><mrow><munderover><mo movablelimits="false">∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>x</mi><mrow><mn>3</mn><mi>k</mi></mrow></msub><mo>−</mo><msub><mi>x</mi><mrow><mn>3</mn><mi>i</mi></mrow></msub></mrow></msup></mrow></mfrac></math><span class="aside"><math><mo>(</mo><mtext>即</mtext><mspace width="0.4em"></mspace><mi>C</mi><mo>≥</mo><mfrac><mn>1</mn><mi>f</mi></mfrac><mo>)</mo></math></span></div>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+  </details>
 
-  <footer>
-    <div><b>模型与依据</b>：《潮汐供电：分流统一公式推导（修正版）》——单线 T = t·d、能量守恒 40A ≥ TQ、分数分流 f = Σ1/d<sub>i</sub>、多线通分后的统一判据 C ≥ 1/f = D/k。</div>
-    <div><b>离散结算</b>：终末地电量按 1 秒一次结算，本页仿真步长就是 1 s（1 tick）。每 tick：到达 → 若空闲则点火 → 燃烧 40 tick 内每秒净增 <code>A − Q</code>，空闲每秒净减 <code>Q</code>，电量钳在 <code>[0, 容量]</code>。</div>
-    <div><b>已知取舍</b>：分流器的物理布局、到达相位是否可按秒错开、以及溢出是否真的完全浪费，都按理想化假设处理，建议以游戏内实测校正。</div>
-  </footer>
 </div>
 
 <script>
